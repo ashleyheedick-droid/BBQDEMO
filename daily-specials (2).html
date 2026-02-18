@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Today's Specials | Smoke Sessions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-darkest: #0d0806;
+      --bg-dark: #1a120e;
+      --bg-card: #221a14;
+      --bg-card-hover: #2d2118;
+      --smoke-brown: #8B4513;
+      --deep-hickory: #3E1A00;
+      --fire-orange: #E25822;
+      --gold: #DAA520;
+      --gold-light: #F0C050;
+      --ember-red: #C41E3A;
+      --text-primary: #F5E6D3;
+      --text-secondary: #B8A08A;
+      --text-muted: #8B7B6B;
+      --border-color: rgba(218,165,32,0.15);
+      --border-glow: rgba(218,165,32,0.3);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-darkest);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ---- Smoke / Ember ambient background ---- */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(ellipse at 20% 0%, rgba(226,88,34,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 100%, rgba(196,30,58,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 50%, rgba(218,165,32,0.03) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ---- Navigation ---- */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,8,6,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--gold);
+      text-decoration: none;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-back:hover {
+      color: var(--gold-light);
+    }
+
+    .nav-back svg {
+      width: 18px;
+      height: 18px;
+      transition: transform 0.2s;
+    }
+
+    .nav-back:hover svg {
+      transform: translateX(-3px);
+    }
+
+    .nav-brand {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      letter-spacing: 2px;
+    }
+
+    /* ---- Main Container ---- */
+    .main-container {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* ---- Hero Header ---- */
+    .hero-header {
+      text-align: center;
+      padding: 48px 16px 20px;
+    }
+
+    .hero-label {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--fire-orange);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .hero-label::before,
+    .hero-label::after {
+      content: '';
+      width: 30px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--fire-orange), transparent);
+    }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 10vw, 5.5rem);
+      line-height: 0.95;
+      letter-spacing: 3px;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--fire-orange) 40%, var(--ember-red) 70%, var(--fire-orange) 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: fireGradient 4s ease infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes fireGradient {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .hero-tagline {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+    }
+
+    .hero-day {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* ---- Countdown Timer ---- */
+    .countdown-section {
+      text-align: center;
+      padding: 24px 16px 36px;
+    }
+
+    .countdown-label {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--ember-red);
+      margin-bottom: 16px;
+    }
+
+    .countdown-wrapper {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px 32px;
+      position: relative;
+      box-shadow:
+        0 0 30px rgba(226,88,34,0.08),
+        0 0 60px rgba(218,165,32,0.04);
+    }
+
+    .countdown-wrapper::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 16px;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(226,88,34,0.3), rgba(218,165,32,0.15), rgba(196,30,58,0.2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .countdown-digit-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .countdown-digits {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.8rem, 8vw, 4.2rem);
+      letter-spacing: 3px;
+      color: var(--text-primary);
+      line-height: 1;
+      text-shadow:
+        0 0 20px rgba(226,88,34,0.4),
+        0 0 40px rgba(226,88,34,0.2);
+      min-width: 70px;
+      text-align: center;
+      animation: timerGlow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes timerGlow {
+      0% { text-shadow: 0 0 20px rgba(226,88,34,0.3), 0 0 40px rgba(226,88,34,0.15); }
+      100% { text-shadow: 0 0 25px rgba(226,88,34,0.5), 0 0 50px rgba(226,88,34,0.25), 0 0 80px rgba(196,30,58,0.1); }
+    }
+
+    .countdown-unit {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .countdown-separator {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.4rem, 7vw, 3.6rem);
+      color: var(--fire-orange);
+      line-height: 1;
+      margin: 0 2px;
+      opacity: 1;
+      align-self: flex-start;
+      animation: separatorBlink 1s steps(1) infinite;
+    }
+
+    @keyframes separatorBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .countdown-closed {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      color: var(--ember-red);
+      letter-spacing: 2px;
+    }
+
+    .countdown-subtext {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 12px;
+    }
+
+    /* ---- Specials Grid ---- */
+    .specials-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      padding-bottom: 48px;
+    }
+
+    @media (min-width: 640px) {
+      .specials-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 960px) {
+      .specials-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    /* ---- Special Card with ember border animation ---- */
+    .special-card {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .special-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(226,88,34,0.15);
+    }
+
+    /* Animated fire/ember border */
+    .special-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      padding: 2px;
+      background: linear-gradient(
+        var(--ember-angle, 0deg),
+        var(--fire-orange) 0%,
+        var(--ember-red) 20%,
+        var(--gold) 40%,
+        var(--fire-orange) 60%,
+        var(--ember-red) 80%,
+        var(--gold-light) 100%
+      );
+      background-size: 300% 300%;
+      animation: emberBorder 3s linear infinite;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    @keyframes emberBorder {
+      0% { background-position: 0% 0%; }
+      50% { background-position: 100% 100%; }
+      100% { background-position: 0% 0%; }
+    }
+
+    /* Outer glow pulse */
+    .special-card::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 18px;
+      background: transparent;
+      box-shadow: 0 0 15px rgba(226,88,34,0.12), 0 0 30px rgba(196,30,58,0.06);
+      animation: emberGlow 2.5s ease-in-out infinite alternate;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes emberGlow {
+      0% { box-shadow: 0 0 12px rgba(226,88,34,0.1), 0 0 25px rgba(196,30,58,0.05); }
+      100% { box-shadow: 0 0 20px rgba(226,88,34,0.2), 0 0 40px rgba(196,30,58,0.1); }
+    }
+
+    .special-card-inner {
+      position: relative;
+      z-index: 2;
+      background: var(--bg-card);
+      border-radius: 14px;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      height: 100%;
+      transition: background 0.3s;
+    }
+
+    .special-card:hover .special-card-inner {
+      background: var(--bg-card-hover);
+    }
+
+    .special-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .special-category {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 0.65rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--bg-darkest);
+      background: var(--gold);
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .savings-badge {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.7rem;
+      color: #fff;
+      background: var(--ember-red);
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      animation: badgePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes badgePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .special-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: 1.5px;
+      color: var(--gold);
+      line-height: 1.1;
+    }
+
+    .special-description {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      flex-grow: 1;
+    }
+
+    .special-pricing {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      padding-top: 4px;
+    }
+
+    .special-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.6rem;
+      color: var(--fire-orange);
+      line-height: 1;
+      letter-spacing: 1px;
+    }
+
+    .special-original-price {
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      color: var(--text-muted);
+      text-decoration: line-through;
+      text-decoration-color: var(--ember-red);
+      text-decoration-thickness: 2px;
+    }
+
+    .special-order-btn {
+      display: block;
+      text-align: center;
+      padding: 14px 20px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #fff;
+      text-decoration: none;
+      background: linear-gradient(135deg, var(--fire-orange), var(--ember-red));
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 4px;
+    }
+
+    .special-order-btn:hover {
+      background: linear-gradient(135deg, #f06830, #d6253e);
+      box-shadow: 0 4px 20px rgba(226,88,34,0.35);
+      transform: translateY(-1px);
+    }
+
+    /* ---- Loading State ---- */
+    .loading-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .loading-spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--fire-orange);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      font-family: 'Inter', sans-serif;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* ---- Empty State ---- */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px 80px;
+    }
+
+    .empty-icon {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+      opacity: 0.6;
+    }
+
+    .empty-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      color: var(--gold);
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .empty-text {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    /* ---- Weekly Schedule Teaser ---- */
+    .weekly-section {
+      padding: 48px 0 56px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .weekly-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .weekly-label {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 0.7rem;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .weekly-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.2rem;
+      letter-spacing: 2px;
+      color: var(--text-primary);
+    }
+
+    .weekly-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    @media (min-width: 500px) {
+      .weekly-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 800px) {
+      .weekly-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .weekly-item {
+      background: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .weekly-item:hover {
+      background: var(--bg-card);
+      border-color: var(--border-glow);
+    }
+
+    .weekly-item.is-today {
+      border-color: var(--fire-orange);
+      background: var(--bg-card);
+      box-shadow: 0 0 20px rgba(226,88,34,0.1);
+    }
+
+    .weekly-day {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--fire-orange);
+    }
+
+    .weekly-item.is-today .weekly-day::after {
+      content: ' \2022 TODAY';
+      color: var(--gold);
+    }
+
+    .weekly-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.25rem;
+      letter-spacing: 1px;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .weekly-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* ---- Footer ---- */
+    .page-footer {
+      border-top: 1px solid var(--border-color);
+      padding: 36px 16px;
+      text-align: center;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .footer-link {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 0.8rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+      padding: 10px 24px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      transition: all 0.25s;
+    }
+
+    .footer-link:hover {
+      border-color: var(--gold);
+      background: rgba(218,165,32,0.08);
+      color: var(--gold-light);
+    }
+
+    .footer-brand {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="top-nav">
+    <a href="index.html" class="nav-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      Back
+    </a>
+    <span class="nav-brand">HOLY SMOKES BBQ</span>
+  </nav>
+
+  <div class="main-container">
+
+    <!-- Hero Header -->
+    <header class="hero-header">
+      <div class="hero-label">Limited Time Only</div>
+      <h1 class="hero-title">Today's Specials</h1>
+      <p class="hero-tagline">Fresh off the pit, priced to thrill</p>
+      <p class="hero-day" id="currentDay"></p>
+    </header>
+
+    <!-- Countdown Timer -->
+
+    <!-- Specials Grid -->
+    <section id="specialsContainer">
+      <div class="loading-state" id="loadingState">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Firing up today's specials...</p>
+      </div>
+    </section>
+
+    <!-- Weekly Schedule Teaser -->
+    <section class="weekly-section">
+      <div class="weekly-header">
+        <p class="weekly-label">What's Coming Up</p>
+        <h2 class="weekly-title">Weekly Specials Calendar</h2>
+      </div>
+      <div class="weekly-grid" id="weeklyGrid"></div>
+    </section>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="page-footer">
+    <div class="footer-links">
+      <a href="customer.html" class="footer-link">Full Menu</a>
+      <a href="order-online.html" class="footer-link">Order Online</a>
+    </div>
+    <p class="footer-brand">Smoke Sessions  -  Low &amp; slow since day one</p>
+  </footer>
+
+  <script src="holysmokes-api.js"></script>
+  <script>
+    (function() {
+      'use strict';
+
+      // ---- Day & Closing Time Config ----
+      var DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      var CLOSING_HOURS = {
+        0: 18, // Sunday   6 PM
+        1: 17, // Monday   5 PM
+        2: 20, // Tuesday  8 PM
+        3: 20, // Wednesday 8 PM
+        4: 20, // Thursday 8 PM
+        5: 22, // Friday  10 PM
+        6: 22  // Saturday 10 PM
+      };
+
+      var WEEKLY_SCHEDULE = [
+        { day: 'Monday',    name: 'Brisket Monday',       desc: 'Prime brisket at a special price' },
+        { day: 'Tuesday',   name: 'Taco Tuesday',         desc: 'BBQ tacos with all the fixins' },
+        { day: 'Wednesday', name: 'Wing Wednesday',       desc: 'Smoked wings, sauced your way' },
+        { day: 'Thursday',  name: 'Burnt Ends Thursday',  desc: 'Kansas City-style burnt ends' },
+        { day: 'Friday',    name: 'Date Night',           desc: 'Combo special for two' },
+        { day: 'Saturday',  name: "Pitmaster's Choice",   desc: "Big Earl's off-menu surprise" },
+        { day: 'Sunday',    name: 'Family Feast',         desc: 'Family platters at a discount' }
+      ];
+
+      // ---- Display Current Day ----
+      var now = new Date();
+      var todayIndex = now.getDay();
+      var dayName = DAYS[todayIndex];
+      var el = document.getElementById('currentDay');
+      if (el) {
+        el.textContent = dayName + ', ' + now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      }
+
+      // ---- Countdown Timer ----
+      var closingHour = CLOSING_HOURS[todayIndex];
+      var timerInterval = null;
+
+      function getClosingTime() {
+        var close = new Date();
+        close.setHours(closingHour, 0, 0, 0);
+        return close;
+      }
+
+      function updateCountdown() {
+        var current = new Date();
+        var closing = getClosingTime();
+        var diff = closing - current;
+
+        var hoursEl = document.getElementById('countdownHours');
+        var minsEl = document.getElementById('countdownMinutes');
+        var secsEl = document.getElementById('countdownSeconds');
+        var subEl = document.getElementById('countdownSubtext');
+
+        if (diff <= 0) {
+          hoursEl.textContent = '00';
+          minsEl.textContent = '00';
+          secsEl.textContent = '00';
+          if (subEl) subEl.textContent = "Today's specials have ended. See you next time!";
+          if (timerInterval) clearInterval(timerInterval);
+          return;
+        }
+
+        var totalSecs = Math.floor(diff / 1000);
+        var h = Math.floor(totalSecs / 3600);
+        var m = Math.floor((totalSecs % 3600) / 60);
+        var s = totalSecs % 60;
+
+        hoursEl.textContent = h < 10 ? '0' + h : h;
+        minsEl.textContent = m < 10 ? '0' + m : m;
+        secsEl.textContent = s < 10 ? '0' + s : s;
+
+        if (subEl) {
+          var closeLabel = closingHour > 12 ? (closingHour - 12) + ':00 PM' : closingHour + ':00 AM';
+          subEl.textContent = 'Closing today at ' + closeLabel;
+        }
+      }
+
+      updateCountdown();
+      timerInterval = setInterval(updateCountdown, 1000);
+
+      // ---- Render Specials ----
+      function renderSpecials(specials) {
+        var container = document.getElementById('specialsContainer');
+
+        // Filter active specials
+        var active = specials.filter(function(s) {
+          return s.active === 'true' || s.active === true;
+        });
+
+        if (!active.length) {
+          container.innerHTML =
+            '<div class="empty-state">' +
+              '<div class="empty-icon">&#x1F525;</div>' +
+              '<h2 class="empty-title">No Specials Right Now</h2>' +
+              '<p class="empty-text">Check back soon  -  Big Earl\'s cooking up something special</p>' +
+            '</div>';
+          return;
+        }
+
+        var html = '<div class="specials-grid">';
+
+        active.forEach(function(s, i) {
+          var price = parseFloat(s.price) || 0;
+          var original = parseFloat(s.originalPrice) || 0;
+          var savings = original > price ? (original - price).toFixed(0) : 0;
+          var categoryLabel = (s.category || 'special').charAt(0).toUpperCase() + (s.category || 'special').slice(1);
+
+          // Stagger animation delay per card
+          var delay = (i * 0.15).toFixed(2);
+
+          html +=
+            '<div class="special-card" style="animation-delay:' + delay + 's">' +
+              '<div class="special-card-inner">' +
+                '<div class="special-card-top">' +
+                  '<span class="special-category">' + categoryLabel + '</span>' +
+                  (savings > 0 ? '<span class="savings-badge">Save $' + savings + '!</span>' : '') +
+                '</div>' +
+                '<h3 class="special-title">' + escapeHtml(s.title) + '</h3>' +
+                '<p class="special-description">' + escapeHtml(s.description) + '</p>' +
+                '<div class="special-pricing">' +
+                  '<span class="special-price">$' + price.toFixed(2) + '</span>' +
+                  (original > price ? '<span class="special-original-price">$' + original.toFixed(2) + '</span>' : '') +
+                '</div>' +
+                '<a href="order-online.html" class="special-order-btn">Order Now</a>' +
+              '</div>' +
+            '</div>';
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+      }
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      // ---- Load Specials via API ----
+      HolySmokesBBQ.getSpecials(function(data) {
+        renderSpecials(data || []);
+      });
+
+      // ---- Weekly Schedule ----
+      var weeklyGrid = document.getElementById('weeklyGrid');
+      if (weeklyGrid) {
+        var dayMap = { 'Sunday':0, 'Monday':1, 'Tuesday':2, 'Wednesday':3, 'Thursday':4, 'Friday':5, 'Saturday':6 };
+        var html = '';
+
+        WEEKLY_SCHEDULE.forEach(function(item) {
+          var isToday = dayMap[item.day] === todayIndex;
+          html +=
+            '<div class="weekly-item' + (isToday ? ' is-today' : '') + '">' +
+              '<span class="weekly-day">' + item.day + '</span>' +
+              '<span class="weekly-name">' + item.name + '</span>' +
+              '<span class="weekly-desc">' + item.desc + '</span>' +
+            '</div>';
+        });
+
+        weeklyGrid.innerHTML = html;
+      }
+
+    })();
+  </script>
+</body>
+</html>

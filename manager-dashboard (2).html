@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manager Dashboard | Smoke Sessions</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-dk:#0d0806;--bg-dark:#1a120e;--bg-card:#221a14;--bg-card-hover:#2d2118;
+  --fire-orange:#E25822;--gold:#DAA520;--gold-light:#F0C050;--ember-red:#C41E3A;
+  --amber:#FF8C00;--text-primary:#F5E6D3;--text-secondary:#B8A08A;--text-muted:#7A6B5A;
+  --border-color:rgba(218,165,32,0.12);--border-glow:rgba(218,165,32,0.35);
+  --green:#4CAF50;--green-dim:rgba(76,175,80,0.15);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg-dk);color:var(--text-primary);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+#ember-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.3}
+
+/* PIN GATE */
+.pin-gate{display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px;position:relative;z-index:10}
+.pin-gate.hidden{display:none}
+.pin-card{background:var(--bg-card);border:1px solid rgba(218,165,32,0.2);border-radius:20px;padding:48px 40px;max-width:420px;width:100%;text-align:center;position:relative;overflow:hidden}
+.pin-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#3E1A00,#DAA520,#E25822,#DAA520,#3E1A00)}
+.pin-icon{font-size:3.5rem;margin-bottom:16px;display:block;animation:lockPulse 2s ease-in-out infinite}
+@keyframes lockPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.pin-card h1{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:3px;color:var(--text-primary);margin-bottom:6px}
+.pin-subtitle{font-family:'Playfair Display',serif;font-style:italic;color:var(--text-muted);font-size:0.9rem;margin-bottom:28px}
+.pin-input{width:100%;background:var(--bg-dark);border:2px solid var(--border-color);border-radius:12px;color:var(--text-primary);font-size:1.4rem;letter-spacing:6px;text-align:center;padding:16px;font-family:'Bebas Neue',sans-serif;margin-bottom:14px;transition:all 0.2s ease}
+.pin-input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 20px rgba(218,165,32,0.15)}
+.pin-btn{width:100%;padding:15px;border:none;border-radius:12px;background:linear-gradient(135deg,#3E1A00,#8B4513);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;cursor:pointer;transition:all 0.25s ease;margin-bottom:10px}
+.pin-btn:hover{box-shadow:0 0 20px rgba(218,165,32,0.25)}
+.pin-hint{font-size:0.8rem;color:var(--text-muted)}
+.pin-error{color:var(--ember-red);font-size:0.85rem;margin-bottom:10px;min-height:20px}
+
+/* DASHBOARD */
+.dashboard{display:none;position:relative;z-index:1}
+.dashboard.visible{display:block}
+
+/* HEADER */
+.dash-header{background:linear-gradient(135deg,#1a120e,#221a14);border-bottom:2px solid rgba(218,165,32,0.25);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100}
+.dash-title{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:3px;color:var(--gold);display:flex;align-items:center;gap:12px}
+.dash-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dash-btn{font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;padding:9px 16px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-secondary);cursor:pointer;transition:all 0.2s ease;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.dash-btn:hover{border-color:var(--border-glow);color:var(--gold);background:var(--bg-card-hover)}
+.dash-btn.danger{border-color:rgba(196,30,58,0.3);color:var(--ember-red)}
+.dash-btn.danger:hover{background:rgba(196,30,58,0.1)}
+
+/* NAV TABS */
+.nav-tabs{background:var(--bg-dark);border-bottom:1px solid var(--border-color);padding:0 24px;display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
+.nav-tabs::-webkit-scrollbar{display:none}
+.nav-tab{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:14px 20px;border-bottom:3px solid transparent;color:var(--text-muted);cursor:pointer;white-space:nowrap;transition:all 0.2s ease;background:none;border-top:none;border-left:none;border-right:none}
+.nav-tab:hover{color:var(--text-secondary)}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* PANELS */
+.panel{display:none;padding:24px;max-width:1400px;margin:0 auto}
+.panel.active{display:block}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;padding:20px;text-align:center;transition:all 0.25s ease;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.gold::before{background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.stat-card.orange::before{background:linear-gradient(90deg,transparent,var(--fire-orange),transparent)}
+.stat-card.green::before{background:linear-gradient(90deg,transparent,#4CAF50,transparent)}
+.stat-card.red::before{background:linear-gradient(90deg,transparent,var(--ember-red),transparent)}
+.stat-card.amber::before{background:linear-gradient(90deg,transparent,var(--amber),transparent)}
+.stat-card:hover{transform:translateY(-2px);border-color:var(--border-glow)}
+.stat-icon{font-size:28px;margin-bottom:6px}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;line-height:1;color:var(--text-primary)}
+.stat-label{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-top:4px}
+.stat-sub{font-size:11px;color:var(--text-secondary);margin-top:2px}
+
+/* SECTION */
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--gold);margin-bottom:4px}
+.section-sub{font-size:12px;color:var(--text-muted);font-style:italic;margin-bottom:16px}
+
+/* GRID LAYOUTS */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+@media(max-width:900px){.two-col{grid-template-columns:1fr}}
+.panel-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;padding:22px}
+
+/* TABLES */
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{text-align:left;padding:10px 12px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);border-bottom:1px solid var(--border-color)}
+.data-table td{padding:12px;border-bottom:1px solid rgba(218,165,32,0.06)}
+.data-table tr:hover td{background:rgba(218,165,32,0.03)}
+.data-table tr:last-child td{border-bottom:none}
+
+/* BADGES */
+.badge{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:3px 9px;border-radius:10px}
+.badge-new{background:rgba(226,88,34,0.15);color:var(--fire-orange);border:1px solid rgba(226,88,34,0.25)}
+.badge-prog{background:rgba(218,165,32,0.12);color:var(--gold);border:1px solid rgba(218,165,32,0.2)}
+.badge-done{background:rgba(76,175,80,0.12);color:#6fcf6f;border:1px solid rgba(76,175,80,0.2)}
+.badge-cancel{background:rgba(196,30,58,0.12);color:#e06080;border:1px solid rgba(196,30,58,0.2)}
+.badge-avail{background:rgba(76,175,80,0.12);color:#6fcf6f;border:1px solid rgba(76,175,80,0.2)}
+.badge-low{background:rgba(255,140,0,0.12);color:var(--amber);border:1px solid rgba(255,140,0,0.25)}
+.badge-sold{background:rgba(196,30,58,0.12);color:#e06080;border:1px solid rgba(196,30,58,0.2)}
+.badge-paid{background:rgba(76,175,80,0.12);color:#6fcf6f;border:1px solid rgba(76,175,80,0.2)}
+.badge-pending{background:rgba(218,165,32,0.12);color:var(--gold);border:1px solid rgba(218,165,32,0.2)}
+.badge-overdue{background:rgba(196,30,58,0.15);color:#e06080;border:1px solid rgba(196,30,58,0.3)}
+
+/* FORMS */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}}
+.form-group{margin-bottom:12px}
+.form-label{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px;display:block}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);padding:10px 14px;font-size:13px;font-family:'Inter',sans-serif;transition:all 0.2s ease}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--border-glow)}
+.form-select option{background:var(--bg-dark)}
+.form-textarea{resize:vertical;min-height:80px}
+.form-btn{padding:10px 20px;border:none;border-radius:8px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;transition:all 0.2s ease}
+.form-btn-primary{background:linear-gradient(135deg,#3E1A00,#8B4513);color:var(--gold);border:1px solid rgba(218,165,32,0.3)}
+.form-btn-primary:hover{box-shadow:0 0 16px rgba(218,165,32,0.2)}
+.form-btn-danger{background:rgba(196,30,58,0.15);color:#e06080;border:1px solid rgba(196,30,58,0.3)}
+
+/* QUICK ACTIONS */
+.quick-actions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+.qa-btn{background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all 0.25s ease;text-decoration:none;color:var(--text-primary);display:block}
+.qa-btn:hover{border-color:var(--border-glow);transform:translateY(-2px);background:var(--bg-card-hover)}
+.qa-icon{font-size:28px;margin-bottom:8px}
+.qa-label{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-secondary)}
+
+/* SMART INVENTORY */
+.smart-inv-row{background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:16px 18px;margin-bottom:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;transition:all 0.2s ease}
+.smart-inv-row:hover{border-color:var(--border-glow)}
+.sir-name{font-weight:600;font-size:14px;min-width:140px;flex:1}
+.sir-stats{display:flex;gap:20px;flex:2;flex-wrap:wrap}
+.sir-stat{text-align:center;min-width:70px}
+.sir-stat-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);letter-spacing:1px}
+.sir-stat-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px}
+.sir-suggest{background:linear-gradient(135deg,rgba(62,26,0,0.5),rgba(139,69,19,0.3));border:1px solid rgba(218,165,32,0.2);border-radius:8px;padding:10px 14px;font-size:12px;flex:1;min-width:200px}
+.sir-suggest .suggest-label{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--amber);letter-spacing:0.5px;margin-bottom:4px}
+.sir-suggest .suggest-val{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--fire-orange);letter-spacing:1px}
+.sir-suggest .suggest-sub{font-size:11px;color:var(--text-secondary)}
+
+/* REVENUE CHART */
+.revenue-bar-chart{margin-top:12px}
+.rev-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.rev-day{font-size:11px;color:var(--text-muted);width:28px;flex-shrink:0;text-align:right;font-family:'Montserrat',sans-serif;font-weight:600}
+.rev-bar-wrap{flex:1;background:rgba(218,165,32,0.06);border-radius:4px;height:24px;overflow:hidden}
+.rev-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,#3E1A00,#DAA520);transition:width 0.8s ease}
+.rev-val{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold);min-width:55px;text-align:right;letter-spacing:0.5px}
+
+/* DELIVERY LIST */
+.delivery-item{background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:18px;margin-bottom:10px;transition:all 0.2s ease}
+.delivery-item:hover{border-color:var(--border-glow)}
+.delivery-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+.delivery-vendor{font-weight:700;font-size:15px}
+.delivery-date{font-size:12px;color:var(--text-muted)}
+.delivery-items-str{font-size:12px;color:var(--text-secondary);margin-bottom:8px}
+.delivery-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.delivery-total{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);letter-spacing:1px}
+
+/* INVOICE LIST */
+.invoice-item{background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:18px;margin-bottom:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;transition:all 0.2s ease}
+.invoice-item:hover{border-color:var(--border-glow)}
+.inv-num{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);letter-spacing:1px;min-width:80px}
+.inv-info{flex:1}
+.inv-vendor{font-weight:600;font-size:14px}
+.inv-desc{font-size:12px;color:var(--text-secondary);margin-top:2px}
+.inv-amount{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--text-primary);letter-spacing:1px;text-align:right}
+.inv-due{font-size:11px;color:var(--text-muted);text-align:right}
+.inv-actions{display:flex;gap:8px}
+.inv-action-btn{padding:7px 14px;border-radius:7px;border:1px solid var(--border-color);background:var(--bg-dark);color:var(--text-secondary);font-size:11px;font-family:'Montserrat',sans-serif;font-weight:600;cursor:pointer;transition:all 0.2s ease}
+.inv-action-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,#1c2a10,#2a4015);border:1px solid rgba(80,200,80,0.3);border-radius:12px;padding:13px 22px;z-index:9999;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);font-family:'Montserrat',sans-serif;font-weight:600;font-size:13px;color:#7fdf7f;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<canvas id="ember-canvas"></canvas>
+<div class="toast" id="toast">Saved!</div>
+
+<!-- PIN GATE -->
+<div class="pin-gate" id="pinGate">
+  <div class="pin-card">
+    <span class="pin-icon">🔥</span>
+    <h1>PIT BOSS ACCESS</h1>
+    <p class="pin-subtitle">Enter your manager PIN to access the dashboard</p>
+    <div class="pin-error" id="pinError"></div>
+    <input type="password" class="pin-input" id="pinInput" placeholder="••••••••••••••" maxlength="20" autocomplete="off">
+    <button class="pin-btn" onclick="tryPin()">🔓 UNLOCK DASHBOARD</button>
+    <p class="pin-hint">Demo PIN: holysmokes2026</p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+
+  <div class="dash-header">
+    <div class="dash-title">🔥 PIT BOSS COMMAND CENTER</div>
+    <div class="dash-actions">
+      <span style="font-size:11px;color:var(--text-muted)" id="headerTime"></span>
+      <a href="kitchen-display.html" class="dash-btn">🍽 Kitchen</a>
+      <a href="waitlist-host-view.html" class="dash-btn">📋 Waitlist</a>
+      <a href="pit-control-center.html" class="dash-btn">🔥 Inventory</a>
+      <button class="dash-btn danger" onclick="logout()">🚪 Logout</button>
+    </div>
+  </div>
+
+  <!-- NAV TABS -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showTab('overview',this)">📊 Overview</button>
+    <button class="nav-tab" onclick="showTab('orders',this)">📦 Orders</button>
+    <button class="nav-tab" onclick="showTab('deliveries',this)">🚚 Deliveries</button>
+    <button class="nav-tab" onclick="showTab('invoices',this)">🧾 Invoices</button>
+    <button class="nav-tab" onclick="showTab('smartinv',this)">🧠 Smart Inventory</button>
+    <button class="nav-tab" onclick="showTab('feedback',this)">⭐ Feedback</button>
+    <button class="nav-tab" onclick="showTab('team',this)">👥 Team</button>
+  </div>
+
+  <!-- ====== OVERVIEW ====== -->
+  <div class="panel active" id="panel-overview">
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card gold"><div class="stat-icon">💰</div><div class="stat-val" id="s-revenue">--</div><div class="stat-label">Today's Revenue</div><div class="stat-sub" id="s-revsub">loading...</div></div>
+      <div class="stat-card orange"><div class="stat-icon">📦</div><div class="stat-val" id="s-orders">--</div><div class="stat-label">Active Orders</div><div class="stat-sub" id="s-ordersub">loading...</div></div>
+      <div class="stat-card green"><div class="stat-icon">🪑</div><div class="stat-val" id="s-seated">--</div><div class="stat-label">Parties Seated</div><div class="stat-sub" id="s-seatedsub">loading...</div></div>
+      <div class="stat-card amber"><div class="stat-icon">⏳</div><div class="stat-val" id="s-waiting">--</div><div class="stat-label">Waiting</div><div class="stat-sub">On waitlist</div></div>
+      <div class="stat-card gold"><div class="stat-icon">⭐</div><div class="stat-val" id="s-rating">--</div><div class="stat-label">Avg Rating</div><div class="stat-sub" id="s-ratingsub">loading...</div></div>
+      <div class="stat-card red"><div class="stat-icon">⚠️</div><div class="stat-val" id="s-alerts">--</div><div class="stat-label">Inv Alerts</div><div class="stat-sub">Low/Sold out</div></div>
+    </div>
+
+    <!-- Revenue Chart -->
+    <div class="two-col">
+      <div class="panel-card">
+        <div class="section-title">📈 WEEKLY REVENUE</div>
+        <div class="section-sub">Sales by day this week</div>
+        <div class="revenue-bar-chart" id="revChart">Loading...</div>
+      </div>
+      <div class="panel-card">
+        <div class="section-title">⚡ RECENT ACTIVITY</div>
+        <div class="section-sub">Last events in the system</div>
+        <div id="recentActivity">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-title">⚡ QUICK ACTIONS</div>
+    <div class="section-sub" style="margin-bottom:14px">Jump to management tools</div>
+    <div class="quick-actions-grid">
+      <a href="pit-control-center.html" class="qa-btn"><div class="qa-icon">🔥</div><div class="qa-label">Pit Control Center</div></a>
+      <a href="waitlist-host-view.html" class="qa-btn"><div class="qa-icon">📋</div><div class="qa-label">Waitlist Host View</div></a>
+      <a href="kitchen-display.html" class="qa-btn"><div class="qa-icon">🍽️</div><div class="qa-label">Kitchen Display</div></a>
+      <a href="live-update-inventory.html" class="qa-btn"><div class="qa-icon">🪵</div><div class="qa-label">What's Smoking</div></a>
+      <a href="daily-specials.html" class="qa-btn"><div class="qa-icon">⭐</div><div class="qa-label">Daily Specials</div></a>
+      <a href="staff-shoutout.html" class="qa-btn"><div class="qa-icon">📣</div><div class="qa-label">Staff Shoutouts</div></a>
+    </div>
+
+    <!-- Inventory Alerts -->
+    <div class="panel-card" style="margin-top:0">
+      <div class="section-title">🚨 INVENTORY ALERTS</div>
+      <div class="section-sub">Items needing attention</div>
+      <div id="invAlerts">Loading...</div>
+    </div>
+  </div>
+
+  <!-- ====== ORDERS ====== -->
+  <div class="panel" id="panel-orders">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div><div class="section-title">📦 ORDERS</div><div class="section-sub">All orders today</div></div>
+      <button class="form-btn form-btn-primary" onclick="loadOrders()">↻ Refresh</button>
+    </div>
+    <div class="panel-card">
+      <table class="data-table" id="ordersTable">
+        <thead><tr><th>Order #</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Time</th><th>Action</th></tr></thead>
+        <tbody id="ordersTbody"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:40px">Loading orders...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ====== DELIVERIES ====== -->
+  <div class="panel" id="panel-deliveries">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div><div class="section-title">🚚 DELIVERIES</div><div class="section-sub">Incoming supplier deliveries & receiving</div></div>
+    </div>
+    <div class="two-col">
+      <div class="panel-card">
+        <div class="section-title" style="font-size:16px;margin-bottom:14px">📅 SCHEDULED DELIVERIES</div>
+        <div id="deliveriesList">Loading...</div>
+      </div>
+      <div class="panel-card">
+        <div class="section-title" style="font-size:16px;margin-bottom:14px">➕ LOG NEW DELIVERY</div>
+        <div class="form-group">
+          <label class="form-label">Vendor / Supplier</label>
+          <input type="text" class="form-input" id="del-vendor" placeholder="e.g. Texas Ranch Supply">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Delivery Date</label>
+            <input type="date" class="form-input" id="del-date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Total Cost</label>
+            <input type="number" class="form-input" id="del-total" placeholder="0.00">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Items Received</label>
+          <textarea class="form-textarea" id="del-items" placeholder="e.g. 80lb brisket, 40lb pork shoulder, 20lb sausage..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="del-status">
+            <option value="scheduled">Scheduled</option>
+            <option value="received">Received</option>
+            <option value="partial">Partial Delivery</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <input type="text" class="form-input" id="del-notes" placeholder="Driver name, PO number, etc.">
+        </div>
+        <button class="form-btn form-btn-primary" onclick="addDelivery()" style="width:100%">🚚 LOG DELIVERY</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== INVOICES ====== -->
+  <div class="panel" id="panel-invoices">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div><div class="section-title">🧾 INVOICES</div><div class="section-sub">Vendor invoices, payables, and billing records</div></div>
+    </div>
+    <!-- Summary cards -->
+    <div class="stats-grid" style="margin-bottom:24px">
+      <div class="stat-card gold"><div class="stat-icon">🧾</div><div class="stat-val" id="inv-total-val">--</div><div class="stat-label">Total Outstanding</div></div>
+      <div class="stat-card red"><div class="stat-icon">🔴</div><div class="stat-val" id="inv-overdue-val">--</div><div class="stat-label">Overdue</div></div>
+      <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-val" id="inv-paid-val">--</div><div class="stat-label">Paid This Month</div></div>
+      <div class="stat-card orange"><div class="stat-icon">⏳</div><div class="stat-val" id="inv-pending-val">--</div><div class="stat-label">Pending</div></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="panel-card" style="margin-bottom:16px">
+          <div class="section-title" style="font-size:16px;margin-bottom:14px">🧾 INVOICE LIST</div>
+          <div id="invoiceList">Loading...</div>
+        </div>
+      </div>
+      <div class="panel-card">
+        <div class="section-title" style="font-size:16px;margin-bottom:14px">➕ CREATE INVOICE</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Invoice #</label>
+            <input type="text" class="form-input" id="inv-num" placeholder="INV-001">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vendor</label>
+            <input type="text" class="form-input" id="inv-vendor" placeholder="Vendor name">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input type="text" class="form-input" id="inv-desc" placeholder="What is this for?">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Amount ($)</label>
+            <input type="number" class="form-input" id="inv-amount" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Due Date</label>
+            <input type="date" class="form-input" id="inv-due">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="inv-status">
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+            <option value="overdue">Overdue</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <input type="text" class="form-input" id="inv-notes" placeholder="PO number, payment method, etc.">
+        </div>
+        <button class="form-btn form-btn-primary" onclick="addInvoice()" style="width:100%">🧾 CREATE INVOICE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SMART INVENTORY ====== -->
+  <div class="panel" id="panel-smartinv">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:12px">
+      <div><div class="section-title">🧠 SMART INVENTORY TRACKER</div><div class="section-sub">AI-powered reorder suggestions based on sales velocity and historical usage</div></div>
+      <button class="form-btn form-btn-primary" onclick="renderSmartInventory()">↻ Recalculate</button>
+    </div>
+    <div style="background:linear-gradient(135deg,rgba(62,26,0,0.3),rgba(139,69,19,0.2));border:1px solid rgba(255,140,0,0.2);border-radius:12px;padding:16px;margin-bottom:20px;font-size:13px;color:var(--text-secondary)">
+      <strong style="color:var(--amber)">🧠 How It Works:</strong> The smart tracker analyzes your sales data, order history, and current inventory levels to calculate daily burn rate per item. It then recommends how much to order so you never run out or overstock. Recommendations are based on a <strong style="color:var(--gold)">3-day buffer</strong> with 20% safety margin.
+    </div>
+    <div id="smartInvList">Loading...</div>
+  </div>
+
+  <!-- ====== FEEDBACK ====== -->
+  <div class="panel" id="panel-feedback">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div><div class="section-title">⭐ CUSTOMER FEEDBACK</div><div class="section-sub">Recent reviews and ratings</div></div>
+      <button class="form-btn form-btn-primary" onclick="loadFeedback()">↻ Refresh</button>
+    </div>
+    <div class="panel-card">
+      <div id="feedbackList">Loading...</div>
+    </div>
+  </div>
+
+  <!-- ====== TEAM ====== -->
+  <div class="panel" id="panel-team">
+    <div style="margin-bottom:20px"><div class="section-title">👥 TEAM & SHOUTOUTS</div><div class="section-sub">Staff shoutouts and recognition</div></div>
+    <div class="panel-card">
+      <div id="shoutoutList">Loading...</div>
+    </div>
+  </div>
+
+</div><!-- end dashboard -->
+
+<script src="holysmokes-api.js"></script>
+<script>
+// EMBERS
+(function(){
+  var c=document.getElementById('ember-canvas');
+  var ctx=c.getContext('2d');var embers=[];
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  function rand(a,b){return a+Math.random()*(b-a);}
+  function Ember(){this.reset();}
+  Ember.prototype.reset=function(){
+    this.x=rand(0,c.width);this.y=c.height+rand(0,60);
+    this.vx=rand(-0.5,0.5);this.vy=rand(-1,-0.2);
+    this.r=rand(1,2.5);this.life=1;this.decay=rand(0.003,0.007);this.hue=rand(5,45);
+  };
+  for(var i=0;i<50;i++){var e=new Ember();e.y=rand(0,c.height);e.life=rand(0,1);embers.push(e);}
+  function frame(){
+    ctx.clearRect(0,0,c.width,c.height);
+    embers.forEach(function(e){
+      e.x+=e.vx+Math.sin(Date.now()/1800+e.y*0.01)*0.2;e.y+=e.vy;e.life-=e.decay;
+      if(e.life<=0||e.y<-20)e.reset();
+      ctx.save();ctx.globalAlpha=e.life*0.6;
+      var g=ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r*2.5);
+      g.addColorStop(0,'hsl('+e.hue+',100%,80%)');g.addColorStop(0.5,'hsl('+e.hue+',100%,55%)');g.addColorStop(1,'transparent');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(e.x,e.y,e.r*2.5,0,Math.PI*2);ctx.fill();ctx.restore();
+    });
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+// PIN
+var CORRECT_PIN='holysmokes2026';
+var AUTH_KEY='holysmokes_mgr_auth';
+function tryPin(){
+  var p=document.getElementById('pinInput').value.trim();
+  if(p===CORRECT_PIN){sessionStorage.setItem(AUTH_KEY,'true');showDashboard();}
+  else{document.getElementById('pinError').textContent='Incorrect PIN. Try again.';document.getElementById('pinInput').value='';}
+}
+document.getElementById('pinInput').addEventListener('keypress',function(e){if(e.key==='Enter')tryPin();});
+function logout(){sessionStorage.removeItem(AUTH_KEY);document.getElementById('dashboard').classList.remove('visible');document.getElementById('pinGate').classList.remove('hidden');document.getElementById('pinInput').value='';}
+function showDashboard(){document.getElementById('pinGate').classList.add('hidden');document.getElementById('dashboard').classList.add('visible');initDashboard();}
+if(sessionStorage.getItem(AUTH_KEY)==='true')showDashboard();
+
+// TABS
+function showTab(name,btn){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('panel-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='overview')loadOverview();
+  else if(name==='orders')loadOrders();
+  else if(name==='deliveries')loadDeliveries();
+  else if(name==='invoices')loadInvoices();
+  else if(name==='smartinv')renderSmartInventory();
+  else if(name==='feedback')loadFeedback();
+  else if(name==='team')loadTeam();
+}
+
+// TOAST
+function showToast(msg){
+  var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2500);
+}
+
+// TIME
+function updateTime(){
+  var t=document.getElementById('headerTime');
+  if(t)t.textContent=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',weekday:'short',month:'short',day:'numeric'});
+}
+setInterval(updateTime,1000);updateTime();
+
+// SEED DATA
+function seedDemoData(){
+  // Orders
+  var orders=HolySmokesBBQ._lsGet('smokesessions_orders',[]);
+  if(!orders||!orders.length){
+    var demoOrders=[
+      {id:'o1',number:'SS-1042',customer:'Table 7',phone:'',items:'2x Brisket Plate, 1x Combo Plate',special:'extra sauce',subtotal:'56.00',tax:'4.62',total:'60.62',pickupTime:'Now',status:'new',createdAt:new Date(Date.now()-5*60000).toISOString(),completedAt:''},
+      {id:'o2',number:'SS-1041',customer:'Mike R.',phone:'214-555-0100',items:'1x Beef Ribs, 2x Sweet Tea',special:'',subtotal:'35.00',tax:'2.89',total:'37.89',pickupTime:'ASAP',status:'completed',createdAt:new Date(Date.now()-25*60000).toISOString(),completedAt:new Date(Date.now()-5*60000).toISOString()},
+      {id:'o3',number:'SS-1040',customer:'Party of 4',phone:'',items:'4x Brisket Plate, 4x Sweet Tea',special:'birthday celebration',subtotal:'84.00',tax:'6.93',total:'90.93',pickupTime:'Now',status:'in_progress',createdAt:new Date(Date.now()-12*60000).toISOString(),completedAt:''},
+      {id:'o4',number:'SS-1039',customer:'Takeout',phone:'972-555-0204',items:'1x Pitmaster\'s Pick, 2x Jalapeño Cornbread',special:'',subtotal:'36.00',tax:'2.97',total:'38.97',pickupTime:'3:30 PM',status:'new',createdAt:new Date(Date.now()-3*60000).toISOString(),completedAt:''},
+      {id:'o5',number:'SS-1038',customer:'Jason T.',phone:'',items:'1x Brisket Burger, 1x Loaded BBQ Nachos, 1x Craft Beer',special:'',subtotal:'37.00',tax:'3.05',total:'40.05',pickupTime:'ASAP',status:'completed',createdAt:new Date(Date.now()-60*60000).toISOString(),completedAt:new Date(Date.now()-40*60000).toISOString()}
+    ];
+    HolySmokesBBQ._lsSet('smokesessions_orders',demoOrders);
+  }
+  // Feedback
+  var fb=HolySmokesBBQ._lsGet('smokesessions_feedback',[]);
+  if(!fb||!fb.length){
+    var demoFb=[
+      {id:'f1',name:'Rebecca T.',rating:5,comment:'Best brisket in North Texas. The burnt ends were insane — crispy, smoky perfection.',category:'food',createdAt:new Date(Date.now()-2*3600000).toISOString()},
+      {id:'f2',name:'Carlos M.',rating:4,comment:'Ribs were fall-off-the-bone. Service was a little slow but worth it.',category:'general',createdAt:new Date(Date.now()-4*3600000).toISOString()},
+      {id:'f3',name:'Anon',rating:5,comment:'The pitmaster pick is legendary. Do not miss it.',category:'food',createdAt:new Date(Date.now()-6*3600000).toISOString()},
+      {id:'f4',name:'Sarah K.',rating:3,comment:'Food was good but ran out of beef ribs early. Disappointed.',category:'inventory',createdAt:new Date(Date.now()-8*3600000).toISOString()}
+    ];
+    HolySmokesBBQ._lsSet('smokesessions_feedback',demoFb);
+  }
+  // Shoutouts
+  var sh=HolySmokesBBQ._lsGet('smokesessions_shoutouts',[]);
+  if(!sh||!sh.length){
+    var demoSh=[
+      {id:'sh1',staffName:'Big Earl',customerName:'The Johnson Family',message:'Earl went above and beyond for our anniversary dinner — brought out extra sides on the house. Total legend.',createdAt:new Date(Date.now()-3600000).toISOString()},
+      {id:'sh2',staffName:'Maria G.',customerName:'Table 12',message:'Maria remembered my allergy from last week. She checked every dish. That kind of care keeps me coming back.',createdAt:new Date(Date.now()-7200000).toISOString()}
+    ];
+    HolySmokesBBQ._lsSet('smokesessions_shoutouts',demoSh);
+  }
+}
+
+// OVERVIEW
+function loadOverview(){
+  HolySmokesBBQ.getDashboardStats(function(stats){
+    document.getElementById('s-revenue').textContent='$'+stats.orders.todayRevenue;
+    document.getElementById('s-revsub').textContent=stats.orders.todayCount+' orders today';
+    document.getElementById('s-orders').textContent=stats.orders.active;
+    document.getElementById('s-ordersub').textContent='In progress';
+    document.getElementById('s-seated').textContent=stats.waitlist.seated;
+    document.getElementById('s-seatedsub').textContent='Total seen today';
+    document.getElementById('s-waiting').textContent=stats.waitlist.waiting;
+    document.getElementById('s-rating').textContent=stats.feedback.avgRating||'N/A';
+    document.getElementById('s-ratingsub').textContent=stats.feedback.count+' reviews';
+    document.getElementById('s-alerts').textContent=stats.inventory.soldOut+stats.inventory.lowStock;
+  });
+  renderRevChart();
+  loadRecentActivity();
+  loadInvAlerts();
+}
+
+function renderRevChart(){
+  var days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var data=[1240,890,1580,2100,2890,3420,1100];
+  var max=Math.max.apply(null,data);
+  var html='';
+  days.forEach(function(d,i){
+    var pct=(data[i]/max*100).toFixed(1);
+    html+='<div class="rev-row">'
+      +'<div class="rev-day">'+d+'</div>'
+      +'<div class="rev-bar-wrap"><div class="rev-bar" style="width:'+pct+'%"></div></div>'
+      +'<div class="rev-val">$'+data[i].toLocaleString()+'</div>'
+      +'</div>';
+  });
+  document.getElementById('revChart').innerHTML=html;
+}
+
+function loadRecentActivity(){
+  HolySmokesBBQ.getOrders(function(orders){
+    var recent=orders.slice(0,5);
+    if(!recent.length){document.getElementById('recentActivity').innerHTML='<p style="color:var(--text-muted);font-style:italic">No recent activity</p>';return;}
+    var html='';
+    recent.forEach(function(o){
+      var time=new Date(o.createdAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+      html+='<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border-color)">'
+        +'<div style="font-size:18px;flex-shrink:0">'+(o.status==='completed'?'✅':o.status==='in_progress'?'🔥':'🆕')+'</div>'
+        +'<div style="flex:1"><div style="font-size:13px;font-weight:600">'+o.number+' — '+o.customer+'</div>'
+        +'<div style="font-size:11px;color:var(--text-muted)">'+o.items.substring(0,50)+'...</div></div>'
+        +'<div style="font-size:11px;color:var(--text-muted);flex-shrink:0">'+time+'</div>'
+        +'</div>';
+    });
+    document.getElementById('recentActivity').innerHTML=html;
+  });
+}
+
+function loadInvAlerts(){
+  HolySmokesBBQ.getInventory(function(items){
+    var alerts=items.filter(function(i){return i.status==='sold_out'||i.status==='low';});
+    if(!alerts.length){document.getElementById('invAlerts').innerHTML='<p style="color:#6fcf6f;padding:10px">✓ All inventory levels are good!</p>';return;}
+    var html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">';
+    alerts.forEach(function(item){
+      var isSold=item.status==='sold_out';
+      html+='<div style="background:var(--bg-dark);border:1px solid '+(isSold?'rgba(196,30,58,0.3)':'rgba(255,140,0,0.25)')+';border-radius:10px;padding:14px">'
+        +'<div style="font-weight:600;font-size:14px;margin-bottom:4px">'+item.item+'</div>'
+        +'<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">'+item.category+' · '+item.quantity+' '+item.unit+' remaining</div>'
+        +'<span class="badge '+(isSold?'badge-sold':'badge-low')+'">'+(isSold?'✕ Sold Out':'⚡ Low Stock')+'</span>'
+        +'</div>';
+    });
+    html+='</div>';
+    document.getElementById('invAlerts').innerHTML=html;
+  });
+}
+
+// ORDERS
+function loadOrders(){
+  HolySmokesBBQ.getOrders(function(orders){
+    if(!orders.length){document.getElementById('ordersTbody').innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:40px">No orders yet today.</td></tr>';return;}
+    var html='';
+    orders.forEach(function(o){
+      var statusCls=o.status==='completed'?'badge-done':o.status==='cancelled'?'badge-cancel':o.status==='in_progress'?'badge-prog':'badge-new';
+      var statusLabel=o.status==='in_progress'?'In Progress':(o.status||'new').charAt(0).toUpperCase()+(o.status||'new').slice(1);
+      var time=new Date(o.createdAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+      html+='<tr>'
+        +'<td><strong>'+o.number+'</strong></td>'
+        +'<td>'+o.customer+'</td>'
+        +'<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+o.items+'</td>'
+        +'<td><strong style="color:var(--gold)">$'+o.total+'</strong></td>'
+        +'<td><span class="badge '+statusCls+'">'+statusLabel+'</span></td>'
+        +'<td>'+time+'</td>'
+        +'<td>'
+        +(o.status!=='completed'&&o.status!=='cancelled'?'<button class="inv-action-btn" onclick="markOrderDone(\''+o.id+'\')">✓ Done</button>':'')
+        +'</td>'
+        +'</tr>';
+    });
+    document.getElementById('ordersTbody').innerHTML=html;
+  });
+}
+
+function markOrderDone(id){
+  HolySmokesBBQ.updateOrderStatus({id:id,status:'completed'},function(resp){
+    if(resp.success){showToast('✓ Order marked complete');loadOrders();}
+  });
+}
+
+// DELIVERIES
+var deliveries=[];
+function loadDeliveries(){
+  deliveries=HolySmokesBBQ._lsGet('sm_deliveries',[]);
+  if(!deliveries||!deliveries.length){seedDeliveries();}
+  renderDeliveries();
+}
+
+function seedDeliveries(){
+  deliveries=[
+    {id:'d1',vendor:'Texas Ranch Supply Co.',date:'2026-02-19',items:'80lb Prime Brisket, 40lb Pork Shoulder, 20lb Chicken',total:'1,240.00',status:'scheduled',notes:'Driver: John B. — PO-4421',createdAt:new Date().toISOString()},
+    {id:'d2',vendor:'Hill Country Meat Co.',date:'2026-02-18',items:'30lb Beef Ribs (dino), 25lb Baby Back Ribs, 10lb Sausage Links',total:'890.00',status:'received',notes:'Received in full. Quality excellent.',createdAt:new Date(Date.now()-86400000).toISOString()},
+    {id:'d3',vendor:'Lone Star Produce',date:'2026-02-20',items:'Fresh jalapeños, onions, peaches for cobbler, seasonal produce',total:'285.00',status:'scheduled',notes:'Weekly produce order',createdAt:new Date().toISOString()},
+    {id:'d4',vendor:'Southern Dry Goods',date:'2026-02-17',items:'Oak wood chips 4 bags, spices, rubs, sauces',total:'420.00',status:'received',notes:'Full delivery. Wood quality great.',createdAt:new Date(Date.now()-2*86400000).toISOString()}
+  ];
+  HolySmokesBBQ._lsSet('sm_deliveries',deliveries);
+}
+
+function renderDeliveries(){
+  if(!deliveries.length){document.getElementById('deliveriesList').innerHTML='<p style="color:var(--text-muted);font-style:italic">No deliveries logged.</p>';return;}
+  var statCls={scheduled:'badge-pending',received:'badge-done',partial:'badge-low',cancelled:'badge-cancel'};
+  var sorted=deliveries.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  var html='';
+  sorted.forEach(function(d){
+    html+='<div class="delivery-item">'
+      +'<div class="delivery-top"><div class="delivery-vendor">'+d.vendor+'</div><div style="display:flex;gap:8px;align-items:center"><div class="delivery-date">'+d.date+'</div><span class="badge '+(statCls[d.status]||'badge-pending')+'">'+d.status+'</span></div></div>'
+      +'<div class="delivery-items-str">'+d.items+'</div>'
+      +'<div class="delivery-footer"><div class="delivery-total">$'+d.total+'</div>'
+      +'<div style="font-size:11px;color:var(--text-muted)">'+d.notes+'</div>'
+      +(d.status==='scheduled'?'<button class="inv-action-btn" onclick="markDeliveryReceived(\''+d.id+'\')">✓ Mark Received</button>':'')
+      +'</div></div>';
+  });
+  document.getElementById('deliveriesList').innerHTML=html;
+}
+
+function markDeliveryReceived(id){
+  deliveries=deliveries.map(function(d){return d.id===id?Object.assign({},d,{status:'received'}):d;});
+  HolySmokesBBQ._lsSet('sm_deliveries',deliveries);
+  renderDeliveries();showToast('✓ Delivery marked received');
+}
+
+function addDelivery(){
+  var vendor=document.getElementById('del-vendor').value.trim();
+  var date=document.getElementById('del-date').value;
+  var total=document.getElementById('del-total').value;
+  var items=document.getElementById('del-items').value.trim();
+  var status=document.getElementById('del-status').value;
+  var notes=document.getElementById('del-notes').value.trim();
+  if(!vendor||!date){showToast('⚠ Fill in vendor and date');return;}
+  deliveries=deliveries||[];
+  deliveries.unshift({id:'d'+Date.now(),vendor:vendor,date:date,items:items,total:parseFloat(total||0).toFixed(2),status:status,notes:notes,createdAt:new Date().toISOString()});
+  HolySmokesBBQ._lsSet('sm_deliveries',deliveries);
+  renderDeliveries();showToast('🚚 Delivery logged!');
+  ['del-vendor','del-date','del-total','del-items','del-notes'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('del-status').value='scheduled';
+}
+
+// INVOICES
+var invoices=[];
+function loadInvoices(){
+  invoices=HolySmokesBBQ._lsGet('sm_invoices',[]);
+  if(!invoices||!invoices.length){seedInvoices();}
+  renderInvoices();
+}
+
+function seedInvoices(){
+  invoices=[
+    {id:'i1',num:'INV-0421',vendor:'Texas Ranch Supply Co.',desc:'Weekly meat order — brisket, pork, chicken',amount:1240.00,due:'2026-02-25',status:'pending',notes:'Net-15',createdAt:new Date().toISOString()},
+    {id:'i2',num:'INV-0418',vendor:'Hill Country Meat Co.',desc:'Beef ribs & baby back ribs',amount:890.00,due:'2026-02-20',status:'paid',notes:'Paid via check #4422',createdAt:new Date(Date.now()-3*86400000).toISOString()},
+    {id:'i3',num:'INV-0415',vendor:'Lone Star Produce',desc:'Weekly produce — jalapeños, peaches, onions',amount:285.00,due:'2026-02-18',status:'overdue',notes:'Contact: 214-555-0180',createdAt:new Date(Date.now()-5*86400000).toISOString()},
+    {id:'i4',num:'INV-0410',vendor:'Southern Dry Goods',desc:'Post oak wood, spices, dry rub supplies',amount:420.00,due:'2026-02-28',status:'pending',notes:'Net-30',createdAt:new Date(Date.now()-7*86400000).toISOString()},
+    {id:'i5',num:'INV-0406',vendor:'DFW Restaurant Supply',desc:'Kitchen equipment maintenance',amount:350.00,due:'2026-02-15',status:'paid',notes:'Paid via ACH',createdAt:new Date(Date.now()-10*86400000).toISOString()}
+  ];
+  HolySmokesBBQ._lsSet('sm_invoices',invoices);
+}
+
+function renderInvoices(){
+  var outstanding=invoices.filter(function(i){return i.status==='pending'||i.status==='overdue';}).reduce(function(s,i){return s+i.amount;},0);
+  var overdue=invoices.filter(function(i){return i.status==='overdue';}).reduce(function(s,i){return s+i.amount;},0);
+  var paid=invoices.filter(function(i){return i.status==='paid';}).reduce(function(s,i){return s+i.amount;},0);
+  var pending=invoices.filter(function(i){return i.status==='pending';}).length;
+  document.getElementById('inv-total-val').textContent='$'+outstanding.toFixed(2);
+  document.getElementById('inv-overdue-val').textContent='$'+overdue.toFixed(2);
+  document.getElementById('inv-paid-val').textContent='$'+paid.toFixed(2);
+  document.getElementById('inv-pending-val').textContent=pending;
+
+  var statCls={paid:'badge-paid',pending:'badge-pending',overdue:'badge-overdue'};
+  var sorted=invoices.slice().sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
+  var html='';
+  sorted.forEach(function(inv){
+    html+='<div class="invoice-item">'
+      +'<div class="inv-num">'+inv.num+'</div>'
+      +'<div class="inv-info"><div class="inv-vendor">'+inv.vendor+'</div><div class="inv-desc">'+inv.desc+'</div></div>'
+      +'<div style="text-align:right">'
+        +'<div class="inv-amount">$'+(inv.amount||0).toFixed(2)+'</div>'
+        +'<div class="inv-due">Due: '+inv.due+'</div>'
+        +'<span class="badge '+(statCls[inv.status]||'badge-pending')+'">'+inv.status+'</span>'
+      +'</div>'
+      +'<div class="inv-actions">'
+        +(inv.status!=='paid'?'<button class="inv-action-btn" onclick="markInvoicePaid(\''+inv.id+'\')">✓ Mark Paid</button>':'')
+        +'<button class="inv-action-btn form-btn-danger" onclick="deleteInvoice(\''+inv.id+'\')">🗑</button>'
+      +'</div>'
+      +'</div>';
+  });
+  document.getElementById('invoiceList').innerHTML=html||'<p style="color:var(--text-muted)">No invoices yet.</p>';
+}
+
+function markInvoicePaid(id){
+  invoices=invoices.map(function(inv){return inv.id===id?Object.assign({},inv,{status:'paid'}):inv;});
+  HolySmokesBBQ._lsSet('sm_invoices',invoices);renderInvoices();showToast('✅ Invoice marked paid');
+}
+
+function deleteInvoice(id){
+  invoices=invoices.filter(function(inv){return inv.id!==id;});
+  HolySmokesBBQ._lsSet('sm_invoices',invoices);renderInvoices();showToast('🗑 Invoice removed');
+}
+
+function addInvoice(){
+  var num=document.getElementById('inv-num').value.trim();
+  var vendor=document.getElementById('inv-vendor').value.trim();
+  var desc=document.getElementById('inv-desc').value.trim();
+  var amount=parseFloat(document.getElementById('inv-amount').value)||0;
+  var due=document.getElementById('inv-due').value;
+  var status=document.getElementById('inv-status').value;
+  var notes=document.getElementById('inv-notes').value.trim();
+  if(!vendor){showToast('⚠ Enter a vendor name');return;}
+  invoices=invoices||[];
+  invoices.unshift({id:'i'+Date.now(),num:num||'INV-'+Date.now(),vendor:vendor,desc:desc,amount:amount,due:due,status:status,notes:notes,createdAt:new Date().toISOString()});
+  HolySmokesBBQ._lsSet('sm_invoices',invoices);
+  renderInvoices();showToast('🧾 Invoice created!');
+  ['inv-num','inv-vendor','inv-desc','inv-amount','inv-due','inv-notes'].forEach(function(id){document.getElementById(id).value='';});
+}
+
+// SMART INVENTORY
+var MENU_ITEMS=[
+  {name:'Brisket',category:'Smoked Meats',unit:'lb',cost:8.50,price:26,dailyTarget:60},
+  {name:'Pulled Pork',category:'Smoked Meats',unit:'lb',cost:4.20,price:18,dailyTarget:40},
+  {name:'Spare Ribs',category:'Smoked Meats',unit:'lb',cost:6.80,price:22,dailyTarget:25},
+  {name:'Baby Back Ribs',category:'Smoked Meats',unit:'lb',cost:7.50,price:24,dailyTarget:20},
+  {name:'Turkey Breast',category:'Smoked Meats',unit:'lb',cost:5.00,price:20,dailyTarget:15},
+  {name:'Sausage Links',category:'Smoked Meats',unit:'lb',cost:3.80,price:16,dailyTarget:30},
+  {name:'Beef Ribs',category:'Smoked Meats',unit:'lb',cost:10.00,price:32,dailyTarget:12},
+  {name:'Smoked Chicken',category:'Smoked Meats',unit:'half',cost:4.50,price:15,dailyTarget:18},
+  {name:'Mac & Cheese',category:'Sides',unit:'serving',cost:1.20,price:5,dailyTarget:50},
+  {name:'Coleslaw',category:'Sides',unit:'serving',cost:0.80,price:4,dailyTarget:40},
+  {name:'Baked Beans',category:'Sides',unit:'serving',cost:1.00,price:5,dailyTarget:35},
+  {name:'Jalapeño Cornbread',category:'Sides',unit:'piece',cost:0.60,price:4,dailyTarget:40},
+  {name:'Burnt Ends',category:'Specialty',unit:'lb',cost:7.00,price:18,dailyTarget:10}
+];
+
+function renderSmartInventory(){
+  HolySmokesBBQ.getInventory(function(inventory){
+    HolySmokesBBQ.getOrders(function(orders){
+      var invMap={};
+      inventory.forEach(function(i){invMap[i.item]=i;});
+
+      // Calculate usage from orders
+      var usageMap={};
+      var today=new Date().toISOString().slice(0,10);
+      var recentOrders=orders.filter(function(o){
+        var d=new Date(o.createdAt||0);
+        var dayAgo=Date.now()-7*24*3600*1000;
+        return d.getTime()>dayAgo;
+      });
+      recentOrders.forEach(function(o){
+        var items=String(o.items||'');
+        MENU_ITEMS.forEach(function(mi){
+          var re=new RegExp('(\\d+)x '+mi.name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i');
+          var match=re.exec(items);
+          if(match){usageMap[mi.name]=(usageMap[mi.name]||0)+parseInt(match[1]);}
+        });
+      });
+
+      var html='';
+      MENU_ITEMS.forEach(function(mi){
+        var inv=invMap[mi.name];
+        var currentQty=inv?parseFloat(inv.quantity)||0:0;
+        var status=inv?inv.status:'unknown';
+        var weeklyUsage=usageMap[mi.name]||0;
+        var dailyBurn=weeklyUsage>0?(weeklyUsage/7):mi.dailyTarget*0.6;
+        var daysLeft=dailyBurn>0?(currentQty/dailyBurn):99;
+        var reorderQty=Math.ceil(mi.dailyTarget*3*1.2); // 3-day buffer + 20%
+        var urgency=daysLeft<1?'🔴 ORDER NOW':daysLeft<2?'🟠 ORDER SOON':daysLeft<4?'🟡 Plan Ahead':'🟢 OK';
+        var costEst=(reorderQty*mi.cost).toFixed(2);
+        var statusCls=status==='available'?'badge-avail':status==='low'?'badge-low':status==='sold_out'?'badge-sold':'badge-pending';
+
+        html+='<div class="smart-inv-row">'
+          +'<div><div class="sir-name">'+mi.name+'</div><div style="font-size:11px;color:var(--text-muted)">'+mi.category+'</div><span class="badge '+statusCls+'" style="margin-top:4px;display:inline-block">'+(status||'unknown')+'</span></div>'
+          +'<div class="sir-stats">'
+            +'<div class="sir-stat"><div class="sir-stat-val">'+currentQty+'</div><div class="sir-stat-label">In Stock ('+mi.unit+')</div></div>'
+            +'<div class="sir-stat"><div class="sir-stat-val">'+dailyBurn.toFixed(1)+'</div><div class="sir-stat-label">Daily Burn</div></div>'
+            +'<div class="sir-stat"><div class="sir-stat-val">'+(daysLeft>98?'∞':daysLeft.toFixed(1))+'</div><div class="sir-stat-label">Days Left</div></div>'
+            +'<div class="sir-stat"><div class="sir-stat-val" style="color:'+(daysLeft<2?'var(--ember-red)':daysLeft<4?'var(--amber)':'var(--gold)')+'">'+urgency+'</div><div class="sir-stat-label">Status</div></div>'
+          +'</div>'
+          +'<div class="sir-suggest">'
+            +'<div class="suggest-label">📦 Recommended Order</div>'
+            +'<div class="suggest-val">'+reorderQty+' '+mi.unit+'</div>'
+            +'<div class="suggest-sub">Est. cost: $'+costEst+' · Price: $'+mi.price+'/'+mi.unit+'</div>'
+          +'</div>'
+          +'</div>';
+      });
+      document.getElementById('smartInvList').innerHTML=html||'<p style="color:var(--text-muted)">No items found.</p>';
+    });
+  });
+}
+
+// FEEDBACK
+function loadFeedback(){
+  HolySmokesBBQ.getFeedback(function(items){
+    if(!items.length){document.getElementById('feedbackList').innerHTML='<p style="color:var(--text-muted);font-style:italic">No feedback yet.</p>';return;}
+    var html='';
+    items.slice(0,20).forEach(function(f){
+      var stars='⭐'.repeat(Math.min(5,Math.round(f.rating||5)));
+      var time=new Date(f.createdAt).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      html+='<div style="padding:14px 0;border-bottom:1px solid var(--border-color)">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px">'
+        +'<div><strong style="font-size:14px">'+f.name+'</strong><span style="margin-left:10px;font-size:12px;color:var(--text-muted)">'+f.category+'</span></div>'
+        +'<div style="display:flex;gap:10px;align-items:center"><div>'+stars+'</div><div style="font-size:11px;color:var(--text-muted)">'+time+'</div></div>'
+        +'</div>'
+        +'<div style="font-size:13px;color:var(--text-secondary);font-style:italic">"'+f.comment+'"</div>'
+        +'</div>';
+    });
+    document.getElementById('feedbackList').innerHTML=html;
+  });
+}
+
+// TEAM
+function loadTeam(){
+  HolySmokesBBQ.getShoutouts(function(items){
+    if(!items.length){document.getElementById('shoutoutList').innerHTML='<p style="color:var(--text-muted);font-style:italic">No shoutouts yet. <a href="staff-shoutout.html" style="color:var(--gold)">Add one!</a></p>';return;}
+    var html='';
+    items.forEach(function(s){
+      var time=new Date(s.createdAt).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      html+='<div style="padding:18px 0;border-bottom:1px solid var(--border-color)">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px">'
+        +'<div><span style="font-family:Bebas Neue,sans-serif;font-size:20px;letter-spacing:1px;color:var(--gold)">📣 '+s.staffName+'</span></div>'
+        +'<div style="font-size:11px;color:var(--text-muted)">From: '+s.customerName+' · '+time+'</div>'
+        +'</div>'
+        +'<div style="font-size:13px;color:var(--text-secondary);font-style:italic">"'+s.message+'"</div>'
+        +'</div>';
+    });
+    document.getElementById('shoutoutList').innerHTML=html;
+  });
+}
+
+// INIT
+function initDashboard(){
+  seedDemoData();
+  loadOverview();
+  // Set today's date on forms
+  var today=new Date().toISOString().slice(0,10);
+  var df=document.getElementById('del-date');if(df)df.value=today;
+  var idf=document.getElementById('inv-due');if(idf)idf.value=today;
+  var inn=document.getElementById('inv-num');if(inn)inn.value='INV-'+Date.now().toString().slice(-4);
+}
+</script>
+</body>
+</html>

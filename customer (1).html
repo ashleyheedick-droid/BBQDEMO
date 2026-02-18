@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu | Smoke Sessions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg-darkest:#08040200;
+      --bg-dk:#0d0806;
+      --bg-dark:#16100c;
+      --bg-card:#1e1610;
+      --bg-card-hover:#261e16;
+      --smoke-brown:#8B4513;
+      --deep-hickory:#3E1A00;
+      --fire-orange:#E25822;
+      --gold:#DAA520;
+      --gold-light:#F0C050;
+      --ember-red:#C41E3A;
+      --amber:#FF8C00;
+      --text-primary:#F5E6D3;
+      --text-secondary:#B8A08A;
+      --text-muted:#7A6B5A;
+      --border-color:rgba(218,165,32,0.12);
+      --border-glow:rgba(218,165,32,0.35);
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',sans-serif;background-color:var(--bg-dk);color:var(--text-primary);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    #ember-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.5}
+    .site-header{background:rgba(13,8,6,0.96);border-bottom:1px solid var(--border-color);position:sticky;top:0;z-index:200;backdrop-filter:blur(20px)}
+    .header-inner{max-width:1280px;margin:0 auto;padding:0 24px}
+    .header-top{display:flex;align-items:center;justify-content:space-between;padding:14px 0 10px}
+    .brand{display:flex;align-items:center;gap:14px;text-decoration:none}
+    .brand-flame{width:50px;height:50px;background:radial-gradient(circle at 50% 120%,#FF8C00,#E25822,#C41E3A);border-radius:50% 50% 50% 50%/40% 40% 60% 60%;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 24px rgba(226,88,34,0.6);animation:flamePulse 2s ease-in-out infinite alternate;flex-shrink:0}
+    @keyframes flamePulse{0%{box-shadow:0 0 15px rgba(226,88,34,0.4);transform:scale(1)}100%{box-shadow:0 0 30px rgba(226,88,34,0.8);transform:scale(1.05)}}
+    .brand-text h1{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:3px;color:var(--gold);line-height:1}
+    .brand-text .tagline{font-family:'Playfair Display',serif;font-style:italic;font-size:11px;color:var(--text-muted)}
+    .header-actions{display:flex;gap:10px;align-items:center}
+    .cart-btn{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--deep-hickory),var(--smoke-brown));border:1px solid rgba(218,165,32,0.3);color:var(--gold);padding:10px 18px;border-radius:10px;cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;transition:all 0.25s ease;position:relative}
+    .cart-btn:hover{background:linear-gradient(135deg,#5a2000,#a0522d);border-color:var(--gold);box-shadow:0 0 16px rgba(218,165,32,0.25)}
+    .cart-badge{background:var(--ember-red);color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;position:absolute;top:-8px;right:-8px;box-shadow:0 0 10px rgba(196,30,58,0.5)}
+    .header-nav{display:flex;gap:4px;padding:8px 0 12px;overflow-x:auto;scrollbar-width:none}
+    .header-nav::-webkit-scrollbar{display:none}
+    .header-nav a{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);text-decoration:none;padding:7px 14px;border-radius:6px;white-space:nowrap;transition:all 0.2s ease}
+    .header-nav a:hover{color:var(--gold);background:rgba(218,165,32,0.08)}
+    .header-nav a.active{color:var(--gold);background:rgba(218,165,32,0.12)}
+    .page-hero{background:linear-gradient(135deg,var(--deep-hickory) 0%,#1a0e06 50%,var(--bg-dk) 100%);padding:56px 24px 44px;text-align:center;position:relative;overflow:hidden;border-bottom:1px solid var(--border-color)}
+    .page-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(226,88,34,0.18) 0%,transparent 70%)}
+    .hero-badge{display:inline-block;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:var(--amber);border:1px solid rgba(255,140,0,0.3);border-radius:20px;padding:5px 16px;margin-bottom:18px;background:rgba(255,140,0,0.08)}
+    .page-hero h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,8vw,90px);letter-spacing:6px;color:var(--text-primary);line-height:0.95;margin-bottom:14px;position:relative}
+    .page-hero h2 span{color:var(--gold)}
+    .page-hero .subtitle{font-family:'Playfair Display',serif;font-style:italic;font-size:18px;color:var(--text-secondary);margin-bottom:20px}
+    .flame-row{font-size:22px;letter-spacing:10px;opacity:0.6}
+    .filter-bar{background:rgba(13,8,6,0.95);border-bottom:1px solid var(--border-color);position:sticky;top:82px;z-index:150;backdrop-filter:blur(16px)}
+    .filter-scroll{max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+    .filter-scroll::-webkit-scrollbar{display:none}
+    .filter-pill{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;padding:9px 20px;border-radius:50px;border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;white-space:nowrap;transition:all 0.22s ease;user-select:none;letter-spacing:0.5px;text-transform:uppercase}
+    .filter-pill:hover{border-color:var(--border-glow);color:var(--gold-light);background:rgba(218,165,32,0.06)}
+    .filter-pill.active{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--bg-dk);border-color:var(--gold);box-shadow:0 0 18px rgba(218,165,32,0.35)}
+    .pill-count{display:inline-block;margin-left:6px;background:rgba(0,0,0,0.2);padding:1px 7px;border-radius:20px;font-size:10px}
+    .filter-pill.active .pill-count{background:rgba(0,0,0,0.25)}
+    .menu-container{max-width:1280px;margin:0 auto;padding:32px 24px 160px;position:relative;z-index:1}
+    .category-section{margin-bottom:52px}
+    .category-heading{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:4px;color:var(--gold);display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--border-color)}
+    .category-subtitle{font-family:'Playfair Display',serif;font-style:italic;font-size:13px;color:var(--text-muted);margin-top:7px;margin-bottom:20px}
+    .menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+    @media(min-width:1100px){.menu-grid{grid-template-columns:repeat(auto-fill,minmax(360px,1fr))}}
+    @media(max-width:600px){.menu-grid{grid-template-columns:1fr}.header-nav{display:none}}
+    .menu-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;padding:22px;position:relative;overflow:hidden;transition:all 0.3s ease}
+    .menu-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity 0.3s ease}
+    .menu-card:hover{border-color:var(--border-glow);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(218,165,32,0.08)}
+    .menu-card:hover::before{opacity:1}
+    .menu-card.sold-out{opacity:0.45}
+    .menu-card.low-stock{border-color:rgba(255,140,0,0.25)}
+    .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
+    .card-name{font-family:'Montserrat',sans-serif;font-weight:700;font-size:17px;color:var(--text-primary);line-height:1.25;flex:1}
+    .card-price-wrap{text-align:right;flex-shrink:0}
+    .card-price{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;color:var(--gold)}
+    .card-unit{font-size:10px;color:var(--text-muted);letter-spacing:0.5px;text-transform:uppercase}
+    .card-desc{font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:16px}
+    .card-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .card-badges{display:flex;gap:6px;flex-wrap:wrap}
+    .badge{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:3px 10px;border-radius:12px}
+    .badge-avail{background:rgba(50,180,50,0.12);color:#6fcf6f;border:1px solid rgba(50,180,50,0.2)}
+    .badge-low{background:rgba(255,140,0,0.12);color:var(--amber);border:1px solid rgba(255,140,0,0.25)}
+    .badge-sold{background:rgba(196,30,58,0.12);color:#e06080;border:1px solid rgba(196,30,58,0.2)}
+    .badge-pop{background:rgba(218,165,32,0.12);color:var(--gold);border:1px solid rgba(218,165,32,0.2)}
+    .badge-feat{background:rgba(226,88,34,0.12);color:var(--fire-orange);border:1px solid rgba(226,88,34,0.2)}
+    .add-btn{background:linear-gradient(135deg,var(--smoke-brown),var(--fire-orange));color:#fff;border:none;border-radius:8px;padding:9px 16px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;transition:all 0.2s ease;white-space:nowrap;display:flex;align-items:center;gap:5px}
+    .add-btn:hover{box-shadow:0 0 18px rgba(226,88,34,0.45);transform:scale(1.04)}
+    .add-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none}
+    .on-pit-badge{position:absolute;top:14px;right:14px;background:linear-gradient(135deg,#2a0e00,#6b2200);border:1px solid rgba(226,88,34,0.35);border-radius:8px;padding:4px 10px;font-size:10px;font-weight:700;color:var(--fire-orange);font-family:'Montserrat',sans-serif;display:flex;align-items:center;gap:4px;box-shadow:0 0 10px rgba(226,88,34,0.2)}
+    /* CART */
+    .cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;opacity:0;pointer-events:none;transition:opacity 0.3s ease}
+    .cart-overlay.open{opacity:1;pointer-events:all}
+    .cart-drawer{position:fixed;right:0;top:0;bottom:0;width:420px;max-width:100vw;background:linear-gradient(180deg,#1a120e 0%,#0d0806 100%);border-left:1px solid var(--border-color);z-index:501;transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;box-shadow:-12px 0 50px rgba(0,0,0,0.7)}
+    .cart-drawer.open{transform:translateX(0)}
+    .cart-header{padding:24px;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center}
+    .cart-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--gold)}
+    .cart-close{background:rgba(218,165,32,0.1);border:1px solid var(--border-color);color:var(--text-secondary);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease}
+    .cart-close:hover{background:rgba(218,165,32,0.2);color:var(--gold)}
+    .cart-items{flex:1;overflow-y:auto;padding:16px 24px}
+    .cart-empty{text-align:center;padding:60px 0;color:var(--text-muted);font-family:'Playfair Display',serif;font-style:italic}
+    .cart-empty .ei{font-size:48px;margin-bottom:12px;opacity:0.4}
+    .cart-item{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border-color)}
+    .cart-item:last-child{border-bottom:none}
+    .cart-item-info{flex:1}
+    .cart-item-name{font-weight:600;font-size:14px;color:var(--text-primary)}
+    .cart-item-price{font-size:13px;color:var(--gold);font-weight:600;margin-top:2px}
+    .cart-item-qty{display:flex;align-items:center;gap:10px}
+    .qty-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease}
+    .qty-btn:hover{border-color:var(--gold);color:var(--gold)}
+    .qty-num{font-weight:700;font-size:15px;min-width:22px;text-align:center}
+    .cart-footer{padding:20px 24px;border-top:1px solid var(--border-color)}
+    .cart-subtotal{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+    .subtotal-label{color:var(--text-secondary);font-size:14px}
+    .subtotal-val{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--gold);letter-spacing:1px}
+    .cart-tax{color:var(--text-muted);font-size:12px;margin-bottom:14px}
+    .order-note{width:100%;background:var(--bg-card);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);padding:10px 14px;font-size:13px;margin-bottom:12px;resize:none;height:60px;font-family:'Inter',sans-serif}
+    .order-note:focus{outline:none;border-color:var(--border-glow)}
+    .checkout-btn{width:100%;padding:16px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--fire-orange),#b84010);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;cursor:pointer;transition:all 0.25s ease;box-shadow:0 4px 20px rgba(226,88,34,0.3)}
+    .checkout-btn:hover{box-shadow:0 6px 30px rgba(226,88,34,0.55);transform:translateY(-2px)}
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:600;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.3s ease}
+    .modal-overlay.open{opacity:1;pointer-events:all}
+    .modal-box{background:linear-gradient(160deg,#1e1510,#110d09);border:1px solid rgba(218,165,32,0.35);border-radius:20px;padding:44px;max-width:520px;width:100%;transform:scale(0.95);transition:transform 0.3s ease;position:relative;overflow:hidden}
+    .modal-overlay.open .modal-box{transform:scale(1)}
+    .modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#3E1A00,#DAA520,#E25822,#DAA520,#3E1A00)}
+    .modal-icon{font-size:56px;text-align:center;margin-bottom:16px}
+    .modal-title{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:3px;color:var(--gold);text-align:center;margin-bottom:8px}
+    .modal-sub{font-family:'Playfair Display',serif;font-style:italic;color:var(--text-secondary);text-align:center;margin-bottom:24px}
+    .modal-order-block{background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:20px;text-align:center;margin-bottom:20px}
+    .modal-order-block .ol{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+    .modal-order-block .on{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:4px;color:var(--fire-orange)}
+    .modal-btn{width:100%;padding:15px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--smoke-brown),var(--fire-orange));color:#fff;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;cursor:pointer;transition:all 0.25s ease}
+    .modal-btn:hover{box-shadow:0 6px 24px rgba(226,88,34,0.4)}
+    /* TOAST */
+    .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,#1c2a10,#2a4015);border:1px solid rgba(80,200,80,0.3);border-radius:12px;padding:14px 24px;z-index:999;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);font-family:'Montserrat',sans-serif;font-weight:600;font-size:14px;color:#7fdf7f;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    .loading-state{text-align:center;padding:80px 0;color:var(--text-muted)}
+    .loading-spinner{width:40px;height:40px;border:3px solid var(--border-color);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+<canvas id="ember-canvas"></canvas>
+
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <div class="cart-title">🔥 Your Order</div>
+    <button class="cart-close" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty"><div class="ei">🍖</div><p>Your pit is empty.<br>Add some smoked goodness!</p></div>
+  </div>
+  <div class="cart-footer">
+    <textarea class="order-note" id="orderNotes" placeholder="Special requests, dietary notes, pickup time..."></textarea>
+    <div class="cart-subtotal">
+      <span class="subtotal-label">Subtotal</span>
+      <span class="subtotal-val" id="cartSubtotal">$0.00</span>
+    </div>
+    <div class="cart-tax" id="cartTax">Tax (8.25%): $0.00 · Total: $0.00</div>
+    <button class="checkout-btn" onclick="placeOrder()">🔥 PLACE ORDER</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="orderModal">
+  <div class="modal-box">
+    <div class="modal-icon">🎉</div>
+    <div class="modal-title">Order Fired Up!</div>
+    <div class="modal-sub">Your smoke is in the queue, partner</div>
+    <div class="modal-order-block">
+      <div class="ol">Order Number</div>
+      <div class="on" id="modalOrderNum">--</div>
+    </div>
+    <button class="modal-btn" onclick="closeOrderModal()">BACK TO MENU</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Added!</div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-top">
+      <a href="index.html" class="brand">
+        <div class="brand-flame">🔥</div>
+        <div class="brand-text"><h1>SMOKE SESSIONS</h1><div class="tagline">Central Texas Style Barbecue</div></div>
+      </a>
+      <div class="header-actions">
+        <button class="cart-btn" onclick="toggleCart()" id="cartBtn">
+          🛒 Order <span id="cartCount" style="display:none" class="cart-badge">0</span>
+        </button>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <a href="index.html">Home</a>
+      <a href="customer.html" class="active">Menu</a>
+      <a href="daily-specials.html">Specials</a>
+      <a href="live-update-inventory.html">What's Smoking</a>
+      <a href="waitlist-guest-form.html">Waitlist</a>
+      <a href="order-online.html">Order Online</a>
+      <a href="pit-ai-chat.html">Pit Chat</a>
+      <a href="customer-feedback.html">Feedback</a>
+    </nav>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="hero-badge">🔥 Fresh Off The Pit</div>
+  <h2>THE <span>MENU</span></h2>
+  <p class="subtitle">Post oak wood-fired. Low and slow. Every single day.</p>
+  <div class="flame-row">🔥 🌾 🔥 🌾 🔥</div>
+</section>
+
+<div class="filter-bar">
+  <div class="filter-scroll" id="filterScroll">
+    <button class="filter-pill active" onclick="setFilter('all',this)">All <span class="pill-count" id="pill-all">0</span></button>
+    <button class="filter-pill" onclick="setFilter('Smoked Meats',this)">🥩 Smoked Meats <span class="pill-count" id="pill-sm">0</span></button>
+    <button class="filter-pill" onclick="setFilter('Plates',this)">🍽️ Plates <span class="pill-count" id="pill-pl">0</span></button>
+    <button class="filter-pill" onclick="setFilter('Specialty',this)">⭐ Specialty <span class="pill-count" id="pill-sp">0</span></button>
+    <button class="filter-pill" onclick="setFilter('Sides',this)">🥗 Sides <span class="pill-count" id="pill-si">0</span></button>
+    <button class="filter-pill" onclick="setFilter('Desserts',this)">🍮 Desserts <span class="pill-count" id="pill-de">0</span></button>
+    <button class="filter-pill" onclick="setFilter('Drinks',this)">🍺 Drinks <span class="pill-count" id="pill-dr">0</span></button>
+  </div>
+</div>
+
+<main class="menu-container" id="menuContainer">
+  <div class="loading-state"><div class="loading-spinner"></div><p>Firing up the menu...</p></div>
+</main>
+
+<script src="holysmokes-api.js"></script>
+<script>
+// EMBER PARTICLES
+(function(){
+  var c=document.getElementById('ember-canvas');
+  var ctx=c.getContext('2d');
+  var embers=[];
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  function rand(a,b){return a+Math.random()*(b-a);}
+  function Ember(){this.reset();}
+  Ember.prototype.reset=function(){
+    this.x=rand(0,c.width);this.y=c.height+rand(0,60);
+    this.vx=rand(-0.6,0.6);this.vy=rand(-1.2,-0.3);
+    this.r=rand(1,3);this.life=1;this.decay=rand(0.003,0.008);
+    this.hue=rand(5,45);
+  };
+  for(var i=0;i<70;i++){var e=new Ember();e.y=rand(0,c.height);e.life=rand(0,1);embers.push(e);}
+  function frame(){
+    ctx.clearRect(0,0,c.width,c.height);
+    embers.forEach(function(e){
+      e.x+=e.vx+Math.sin(Date.now()/1800+e.y*0.01)*0.25;
+      e.y+=e.vy;e.life-=e.decay;
+      if(e.life<=0||e.y<-20)e.reset();
+      ctx.save();ctx.globalAlpha=e.life*0.7;
+      var g=ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r*2.5);
+      g.addColorStop(0,'hsl('+e.hue+',100%,85%)');
+      g.addColorStop(0.5,'hsl('+e.hue+',100%,55%)');
+      g.addColorStop(1,'transparent');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(e.x,e.y,e.r*2.5,0,Math.PI*2);ctx.fill();ctx.restore();
+    });
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+// MENU DATA
+var FULL_MENU=[
+  // Smoked Meats
+  {name:'Brisket',desc:'Prime USDA beef brisket — 14-hour post oak smoke, salt & pepper bark',price:26,cat:'Smoked Meats',unit:'per lb',pop:true,feat:true},
+  {name:'Pulled Pork',desc:'Heritage pork shoulder — slow-smoked 12 hours, hand-pulled to order',price:18,cat:'Smoked Meats',unit:'per lb',pop:true},
+  {name:'Spare Ribs',desc:'St. Louis-style spare ribs — dry rubbed, 6-hour smoke',price:22,cat:'Smoked Meats',unit:'per lb'},
+  {name:'Baby Back Ribs',desc:'Pork baby backs — tender, fall-off-the-bone perfection',price:24,cat:'Smoked Meats',unit:'per lb'},
+  {name:'Turkey Breast',desc:'Whole herb-brined smoked turkey breast — juicy & golden',price:20,cat:'Smoked Meats',unit:'per lb'},
+  {name:'Sausage Links',desc:'House-made beef & jalapeño sausage — natural casings, post oak smoke',price:16,cat:'Smoked Meats',unit:'per lb',pop:true},
+  {name:'Beef Ribs',desc:'Dino beef ribs — bone-in plate short ribs, 10-hour smoke',price:32,cat:'Smoked Meats',unit:'per lb',feat:true},
+  {name:'Smoked Chicken',desc:'Whole half chicken — apple wood smoke, crispy rendered skin',price:15,cat:'Smoked Meats',unit:'per half'},
+  {name:'Smoked Duck',desc:'Heritage duck — cherry wood smoke, seasonal offering',price:28,cat:'Smoked Meats',unit:'per lb'},
+  // Plates
+  {name:'Brisket Plate',desc:'Sliced brisket with choice of 2 sides + jalapeño cornbread',price:19,cat:'Plates',unit:'w/ 2 sides',pop:true},
+  {name:'Pulled Pork Plate',desc:'Pulled pork with choice of 2 sides, pickles & white onion',price:15,cat:'Plates',unit:'w/ 2 sides'},
+  {name:'Rib Plate',desc:'3 spare ribs with choice of 2 sides',price:18,cat:'Plates',unit:'w/ 2 sides'},
+  {name:'Turkey Plate',desc:'Smoked turkey breast with choice of 2 sides',price:16,cat:'Plates',unit:'w/ 2 sides'},
+  {name:'Combo Plate',desc:'Any 2 meats with 2 sides — mix and match the pit',price:22,cat:'Plates',unit:'2 meats + 2 sides',pop:true},
+  {name:"Pitmaster's Pick",desc:"Chef's daily selection of 3 premium cuts — the full pit experience",price:28,cat:'Plates',unit:'3 meats + 2 sides',feat:true},
+  {name:'Kids Plate',desc:'Pulled pork or sausage with 1 side and a juice box',price:9,cat:'Plates',unit:'kids'},
+  // Specialty
+  {name:'Brisket Burger',desc:'Ground brisket patty, smoked gouda, pickled red onion, house sauce on brioche',price:16,cat:'Specialty',pop:true},
+  {name:'Smoked Brisket Egg Rolls',desc:'Brisket, pepper jack, pickled jalapeños in crispy wonton — 3 pcs',price:12,cat:'Specialty',feat:true,unit:'3 pcs'},
+  {name:'Loaded BBQ Nachos',desc:'Tortilla chips, pulled pork, house queso, pickled jalapeños, smoke slaw',price:14,cat:'Specialty',pop:true},
+  {name:'Smoked Wings',desc:'Six jumbo wings — dry-rubbed and smoked, choice of sauce or naked',price:13,cat:'Specialty',unit:'6 pcs',pop:true},
+  {name:'Burnt Ends',desc:'Caramelized, crispy brisket point ends with pickles & white bread',price:18,cat:'Specialty',feat:true,pop:true},
+  {name:'Brisket Tacos',desc:'3 flour tortillas, sliced brisket, pickled onion, avocado crema, pico de gallo',price:15,cat:'Specialty',unit:'3 tacos'},
+  {name:'Smoked Bologna Sandwich',desc:'Thick-cut smoked bologna, yellow mustard, pickles on Texas toast',price:10,cat:'Specialty'},
+  {name:'BBQ Quesadilla',desc:'Flour tortilla smothered in pulled pork, queso blanco, smoked jalapeños',price:12,cat:'Specialty'},
+  {name:'Jalapeño Poppers',desc:'Cream cheese & brisket stuffed, bacon-wrapped, smoked — 6 pcs',price:11,cat:'Specialty',unit:'6 pcs'},
+  {name:'Smoked Meatball Sub',desc:'House beef & pork meatballs, smoked tomato sauce, provolone on hoagie roll',price:13,cat:'Specialty'},
+  // Sides
+  {name:'Mac & Cheese',desc:'Three-cheese blend with smoked gouda — extra creamy, house recipe',price:5,cat:'Sides',pop:true},
+  {name:'Coleslaw',desc:'Tangy apple cider vinegar coleslaw — made fresh daily',price:4,cat:'Sides'},
+  {name:'Baked Beans',desc:'Slow-cooked pinto beans with smoked burnt ends and brown sugar',price:5,cat:'Sides',pop:true},
+  {name:'Potato Salad',desc:'Classic yellow mustard potato salad with celery & dill',price:4,cat:'Sides'},
+  {name:'Corn Pudding',desc:'Sweet corn casserole with cream cheese and honey butter',price:5,cat:'Sides'},
+  {name:'Jalapeño Cornbread',desc:'Cast-iron skillet cornbread with fresh jalapeños and honey butter',price:4,cat:'Sides',pop:true},
+  {name:'Collard Greens',desc:'Braised low and slow with smoked ham hock and a touch of vinegar',price:5,cat:'Sides'},
+  {name:'Fried Okra',desc:'Cornmeal-crusted okra fried golden — Southern perfection',price:5,cat:'Sides'},
+  {name:'Smoked Jalapeño Slaw',desc:'Creamy coleslaw with smoked jalapeños and chipotle dressing',price:5,cat:'Sides'},
+  {name:'Pit Beans',desc:'Smoked pork & beef pit beans — slow cooked overnight in the smoker',price:6,cat:'Sides',feat:true},
+  // Desserts
+  {name:'Pecan Pie',desc:'Classic Texas pecan pie — house-made with Karo syrup and toasted pecans',price:7,cat:'Desserts',pop:true},
+  {name:'Banana Pudding',desc:'From-scratch banana pudding with homemade vanilla wafers',price:6,cat:'Desserts',pop:true},
+  {name:'Smoked Peach Cobbler',desc:'Wood-fired peach cobbler served warm with vanilla ice cream',price:8,cat:'Desserts',feat:true},
+  {name:'Chocolate Bourbon Cake',desc:'Rich chocolate layer cake with bourbon caramel glaze',price:8,cat:'Desserts'},
+  {name:'Ice Cream Sandwich',desc:'House-made cookies with premium vanilla ice cream',price:5,cat:'Desserts'},
+  // Drinks
+  {name:'Sweet Tea',desc:"Southern-style sweet iced tea — brewed fresh, all-day",price:3,cat:'Drinks',pop:true},
+  {name:'Unsweetened Tea',desc:'Brewed black tea — crisp and bold',price:3,cat:'Drinks'},
+  {name:'Fresh Lemonade',desc:'Squeezed-to-order lemonade with Texas wildflower honey',price:3,cat:'Drinks'},
+  {name:'Craft Sodas',desc:'Rotating selection of small-batch Texas craft sodas',price:4,cat:'Drinks'},
+  {name:'Local Craft Beer',desc:'Rotating taps from Hill Country and DFW local breweries',price:7,cat:'Drinks',unit:'draft pint'},
+  {name:'Frozen Margarita',desc:"House margarita — fresh lime, agave, salt or Tajín rim",price:9,cat:'Drinks',pop:true},
+  {name:'Bourbon Lemonade',desc:'House bourbon, fresh lemon, honey simple syrup, dash of bitters',price:11,cat:'Drinks',feat:true},
+  {name:'Bottled Water',desc:'Still or sparkling',price:2,cat:'Drinks'}
+];
+
+var CAT_META={
+  'Smoked Meats':{icon:'🥩',sub:'Priced per pound — smoked fresh daily over post oak wood'},
+  'Plates':{icon:'🍽️',sub:'All plates served with your choice of two sides and jalapeño cornbread'},
+  'Specialty':{icon:'⭐',sub:"Fan favorites and pitmaster's signature creations"},
+  'Sides':{icon:'🥗',sub:'House-made sides, scratch-cooked every morning'},
+  'Desserts':{icon:'🍮',sub:'Sweet endings to a smoky meal'},
+  'Drinks':{icon:'🍺',sub:'Cold drinks to quench the fire'}
+};
+var CAT_ORDER=['Smoked Meats','Plates','Specialty','Sides','Desserts','Drinks'];
+var CAT_PILLS={
+  'Smoked Meats':'pill-sm','Plates':'pill-pl','Specialty':'pill-sp',
+  'Sides':'pill-si','Desserts':'pill-de','Drinks':'pill-dr'
+};
+
+var inventoryData={};
+var activeCategory='all';
+var cart=HolySmokesBBQ._lsGet('cart_v2',[]);
+
+function loadInventory(){
+  HolySmokesBBQ.getInventory(function(items){
+    inventoryData={};
+    items.forEach(function(i){inventoryData[i.item]=i;});
+    if(!items.length)seedInventory();
+    renderMenu();
+  });
+}
+
+function seedInventory(){
+  var seeds=[
+    {item:'Brisket',category:'Smoked Meats',status:'available',quantity:45,unit:'lb',price:26},
+    {item:'Pulled Pork',category:'Smoked Meats',status:'available',quantity:30,unit:'lb',price:18},
+    {item:'Spare Ribs',category:'Smoked Meats',status:'available',quantity:20,unit:'lb',price:22},
+    {item:'Baby Back Ribs',category:'Smoked Meats',status:'low',quantity:8,unit:'lb',price:24},
+    {item:'Turkey Breast',category:'Smoked Meats',status:'available',quantity:15,unit:'lb',price:20},
+    {item:'Sausage Links',category:'Smoked Meats',status:'available',quantity:35,unit:'lb',price:16},
+    {item:'Beef Ribs',category:'Smoked Meats',status:'low',quantity:4,unit:'lb',price:32},
+    {item:'Smoked Chicken',category:'Smoked Meats',status:'available',quantity:12,unit:'half',price:15},
+    {item:'Smoked Duck',category:'Smoked Meats',status:'sold_out',quantity:0,unit:'lb',price:28},
+    {item:'Mac & Cheese',category:'Sides',status:'available',quantity:20,unit:'qt',price:5},
+    {item:'Burnt Ends',category:'Specialty',status:'low',quantity:3,unit:'lb',price:18},
+    {item:'Beef Ribs',category:'Smoked Meats',status:'low',quantity:4,unit:'lb',price:32}
+  ];
+  seeds.forEach(function(s){HolySmokesBBQ.updateInventory(s);inventoryData[s.item]=s;});
+}
+
+function renderMenu(){
+  var container=document.getElementById('menuContainer');
+  var counts={};
+  FULL_MENU.forEach(function(i){counts[i.cat]=(counts[i.cat]||0)+1;});
+  document.getElementById('pill-all').textContent=FULL_MENU.length;
+  Object.keys(CAT_PILLS).forEach(function(cat){
+    var el=document.getElementById(CAT_PILLS[cat]);
+    if(el)el.textContent=counts[cat]||0;
+  });
+
+  var filtered=activeCategory==='all'?FULL_MENU:FULL_MENU.filter(function(i){return i.cat===activeCategory;});
+  if(!filtered.length){container.innerHTML='<p style="text-align:center;color:var(--text-muted);padding:80px 0;font-style:italic">No items in this category.</p>';return;}
+
+  var grouped={};
+  filtered.forEach(function(item){if(!grouped[item.cat])grouped[item.cat]=[];grouped[item.cat].push(item);});
+
+  var html='';
+  var catsToShow=activeCategory==='all'?CAT_ORDER:[activeCategory];
+  catsToShow.forEach(function(cat){
+    if(!grouped[cat])return;
+    var meta=CAT_META[cat]||{icon:'🔥',sub:''};
+    html+='<section class="category-section"><div class="category-heading"><span>'+meta.icon+'</span>'+cat+'</div>';
+    html+='<p class="category-subtitle">'+meta.sub+'</p>';
+    html+='<div class="menu-grid">';
+    grouped[cat].forEach(function(item){html+=buildCard(item);});
+    html+='</div></section>';
+  });
+  container.innerHTML=html;
+}
+
+function buildCard(item){
+  var inv=inventoryData[item.name];
+  var status=inv?inv.status:'available';
+  var soldOut=status==='sold_out';
+  var low=status==='low';
+  var cls='menu-card'+(soldOut?' sold-out':'')+(low?' low-stock':'');
+  var badges='';
+  if(soldOut)badges+='<span class="badge badge-sold">Sold Out</span>';
+  else if(low)badges+='<span class="badge badge-low">⚡ Running Low</span>';
+  else badges+='<span class="badge badge-avail">✓ Available</span>';
+  if(item.pop)badges+='<span class="badge badge-pop">🔥 Popular</span>';
+  if(item.feat)badges+='<span class="badge badge-feat">⭐ Featured</span>';
+  var pitBadge=item.cat==='Smoked Meats'&&!soldOut?'<div class="on-pit-badge">🪵 On The Pit</div>':'';
+  var safeN=item.name.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+  var btnDisabled=soldOut?'disabled':'';
+  return '<div class="'+cls+'">'
+    +pitBadge
+    +'<div class="card-top"><div class="card-name">'+item.name+'</div><div class="card-price-wrap"><div class="card-price">$'+item.price.toFixed(2)+'</div><div class="card-unit">'+(item.unit||'')+'</div></div></div>'
+    +'<p class="card-desc">'+item.desc+'</p>'
+    +'<div class="card-footer"><div class="card-badges">'+badges+'</div>'
+    +'<button class="add-btn" '+btnDisabled+' onclick="addToCartBtn(\''+safeN+'\','+item.price+',\''+(item.unit||'').replace(/'/g,"\\'")+'\')" >+ Add</button>'
+    +'</div></div>';
+}
+
+function setFilter(cat,btn){
+  activeCategory=cat;
+  document.querySelectorAll('.filter-pill').forEach(function(p){p.classList.remove('active');});
+  btn.classList.add('active');
+  renderMenu();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function addToCartBtn(name,price,unit){
+  var existing=cart.find(function(i){return i.name===name;});
+  if(existing){existing.qty++;}else{cart.push({name:name,price:price,unit:unit,qty:1});}
+  saveCart();updateCartUI();showToast('🔥 '+name+' added!');
+}
+
+function removeFromCart(name){cart=cart.filter(function(i){return i.name!==name;});saveCart();updateCartUI();}
+
+function changeQty(name,delta){
+  var item=cart.find(function(i){return i.name===name;});
+  if(!item)return;
+  item.qty+=delta;
+  if(item.qty<=0){removeFromCart(name);return;}
+  saveCart();updateCartUI();
+}
+
+function saveCart(){HolySmokesBBQ._lsSet('cart_v2',cart);}
+
+function updateCartUI(){
+  var count=cart.reduce(function(s,i){return s+i.qty;},0);
+  var subtotal=cart.reduce(function(s,i){return s+i.qty*i.price;},0);
+  var tax=subtotal*0.0825;
+  var total=subtotal+tax;
+  var badge=document.getElementById('cartCount');
+  if(count>0){badge.style.display='flex';badge.textContent=count;}else{badge.style.display='none';}
+  document.getElementById('cartSubtotal').textContent='$'+subtotal.toFixed(2);
+  document.getElementById('cartTax').textContent='Tax (8.25%): $'+tax.toFixed(2)+' · Total: $'+total.toFixed(2);
+  var ic=document.getElementById('cartItems');
+  if(cart.length===0){ic.innerHTML='<div class="cart-empty"><div class="ei">🍖</div><p>Your pit is empty.<br>Add some smoked goodness!</p></div>';return;}
+  var html='';
+  cart.forEach(function(item){
+    var sn=item.name.replace(/'/g,"\\'");
+    html+='<div class="cart-item"><div class="cart-item-info"><div class="cart-item-name">'+item.name+'</div><div class="cart-item-price">$'+item.price.toFixed(2)+(item.unit?' / '+item.unit:'')+'</div></div>'
+      +'<div class="cart-item-qty">'
+      +'<button class="qty-btn" onclick="changeQty(\''+sn+'\',-1)">−</button>'
+      +'<span class="qty-num">'+item.qty+'</span>'
+      +'<button class="qty-btn" onclick="changeQty(\''+sn+'\',1)">+</button>'
+      +'</div></div>';
+  });
+  ic.innerHTML=html;
+}
+
+function toggleCart(){
+  document.getElementById('cartDrawer').classList.toggle('open');
+  document.getElementById('cartOverlay').classList.toggle('open');
+}
+
+function placeOrder(){
+  if(cart.length===0){showToast('⚠ Add something first!');return;}
+  var subtotal=cart.reduce(function(s,i){return s+i.qty*i.price;},0);
+  var tax=subtotal*0.0825;
+  var total=subtotal+tax;
+  var itemStr=cart.map(function(i){return i.qty+'x '+i.name;}).join(', ');
+  var notes=document.getElementById('orderNotes').value;
+  HolySmokesBBQ.addOrder({customer:'Walk-in',phone:'',items:itemStr,subtotal:subtotal.toFixed(2),tax:tax.toFixed(2),total:total.toFixed(2),special:notes,pickupTime:'ASAP'},function(resp){
+    if(resp&&resp.success){
+      document.getElementById('modalOrderNum').textContent=resp.data.number;
+      document.getElementById('cartDrawer').classList.remove('open');
+      document.getElementById('cartOverlay').classList.remove('open');
+      document.getElementById('orderModal').classList.add('open');
+      cart=[];saveCart();updateCartUI();
+    }
+  });
+}
+
+function closeOrderModal(){document.getElementById('orderModal').classList.remove('open');}
+
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2400);
+}
+
+window.addEventListener('DOMContentLoaded',function(){updateCartUI();loadInventory();});
+</script>
+</body>
+</html>

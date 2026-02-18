@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Menu | Smoke Sessions BBQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080503;
+    --bg-card: #130e09;
+    --bg-card2: #1c1309;
+    --gold: #DAA520;
+    --gold-light: #F2C94C;
+    --fire: #E25822;
+    --ember: #C41E3A;
+    --cream: #F5E6D3;
+    --tan: #C4A882;
+    --muted: #7A6A55;
+    --border: rgba(218,165,32,0.18);
+    --border-hot: rgba(226,88,34,0.3);
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Lora', serif;
+    background: var(--bg);
+    color: var(--cream);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── EMBER PARTICLE CANVAS ── */
+  #ember-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ── NAV ── */
+  .nav {
+    position: fixed; top:0; left:0; right:0; z-index:1000;
+    background: rgba(8,5,3,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    height: 68px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px;
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.5rem; letter-spacing: 3px; color: var(--gold);
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none;
+  }
+  .nav-logo-flame { font-size: 1.4rem; animation: flicker 1.8s ease-in-out infinite alternate; }
+  @keyframes flicker { 0%{opacity:1;transform:scale(1)} 50%{opacity:.8;transform:scale(1.08)} 100%{opacity:.95;transform:scale(.97)} }
+
+  .nav-links { display:flex; gap:24px; list-style:none; }
+  .nav-links a { font-family:'Montserrat',sans-serif; font-size:.82rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--tan); text-decoration:none; transition:color .2s; }
+  .nav-links a:hover, .nav-links a.active { color:var(--gold); }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 60vh;
+    display: flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+    padding: 120px 24px 60px;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(226,88,34,0.18) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 50% 80%, rgba(196,30,58,0.12) 0%, transparent 60%),
+      linear-gradient(180deg, #080503 0%, #0f0804 60%, #080503 100%);
+    z-index: 1;
+  }
+  .hero-eyebrow {
+    font-family: 'Montserrat', sans-serif;
+    font-size: .75rem; font-weight:700; letter-spacing:5px; text-transform:uppercase;
+    color: var(--fire); margin-bottom:20px;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(5rem, 14vw, 11rem);
+    letter-spacing: 8px;
+    line-height: .9;
+    background: linear-gradient(160deg, #F2C94C 0%, #DAA520 40%, #E25822 80%, #C41E3A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 40px rgba(226,88,34,0.3));
+    margin-bottom: 20px;
+  }
+  .hero-sub {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--tan);
+    max-width: 440px;
+    line-height: 1.7;
+  }
+  .hero-divider {
+    width: 120px; height:2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 28px auto;
+  }
+
+  /* ── FILTER PILLS ── */
+  .filter-bar {
+    position: sticky; top: 68px; z-index: 500;
+    background: rgba(8,5,3,0.95);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex; gap: 8px; overflow-x:auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .filter-bar::-webkit-scrollbar { display:none; }
+  .pill {
+    font-family: 'Montserrat', sans-serif;
+    font-size: .78rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+    padding: 10px 22px; border-radius: 50px;
+    border: 1px solid var(--border);
+    background: var(--bg-card); color: var(--muted);
+    cursor: pointer; white-space:nowrap; transition:all .25s;
+    min-height: 42px;
+  }
+  .pill:hover { color:var(--cream); border-color:var(--border-hot); }
+  .pill.active {
+    background: linear-gradient(135deg, #8B4513, #E25822);
+    color: var(--gold-light); border-color: var(--gold);
+    box-shadow: 0 0 16px rgba(226,88,34,0.35);
+  }
+
+  /* ── MAIN CONTENT ── */
+  .menu-body { position:relative; z-index:1; padding: 0 0 80px; }
+
+  /* ── CATEGORY HEADING ── */
+  .cat-header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 52px 40px 20px;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .cat-icon { font-size: 2.4rem; filter: drop-shadow(0 0 8px rgba(226,88,34,0.5)); }
+  .cat-name {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 2.6rem; letter-spacing: 4px; color: var(--gold);
+  }
+  .cat-line { flex:1; height:1px; background: linear-gradient(90deg, var(--border-hot), transparent); }
+  .cat-subtitle {
+    font-family: 'Playfair Display', serif;
+    font-style: italic; color: var(--muted); font-size: .9rem;
+    padding: 0 40px 28px; max-width: 1200px; margin: 0 auto;
+  }
+
+  /* ── MENU GRID ── */
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+    padding: 0 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ── MENU CARD ── */
+  .menu-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .3s, box-shadow .3s, border-color .3s;
+    display: flex; flex-direction:column; gap:10px;
+  }
+  .menu-card::before {
+    content:'';
+    position:absolute; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(90deg, transparent, var(--fire), transparent);
+    opacity:0; transition: opacity .3s;
+  }
+  .menu-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 20px rgba(226,88,34,0.15);
+    border-color: rgba(218,165,32,0.35);
+  }
+  .menu-card:hover::before { opacity:1; }
+
+  /* Meat badge glow */
+  .menu-card.is-meat {
+    border-color: rgba(196,30,58,0.25);
+  }
+  .menu-card.is-meat::after {
+    content:'';
+    position:absolute; bottom:0; right:0;
+    width:80px; height:80px;
+    background: radial-gradient(circle, rgba(196,30,58,0.12), transparent);
+    pointer-events:none;
+  }
+
+  .card-top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .card-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; font-weight:700;
+    color: var(--cream); line-height:1.3; flex:1;
+  }
+  .card-price {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.6rem; letter-spacing:1px;
+    color: var(--gold); white-space:nowrap;
+  }
+  .card-unit {
+    font-family: 'Montserrat', sans-serif;
+    font-size: .65rem; font-weight:600; text-transform:uppercase;
+    color: var(--muted); letter-spacing:1px;
+    text-align:right; margin-top:-8px;
+  }
+  .card-desc {
+    font-family: 'Lora', serif;
+    font-size: .88rem; color: var(--muted);
+    line-height: 1.6;
+  }
+  .card-tags { display:flex; gap:6px; flex-wrap:wrap; }
+  .card-tag {
+    font-family: 'Montserrat', sans-serif;
+    font-size: .65rem; font-weight:700; text-transform:uppercase; letter-spacing:.8px;
+    padding: 3px 10px; border-radius:20px;
+    background: rgba(218,165,32,0.1); color: var(--gold);
+    border: 1px solid rgba(218,165,32,0.2);
+  }
+  .card-tag.hot { background: rgba(226,88,34,0.1); color: var(--fire); border-color: rgba(226,88,34,0.25); }
+  .card-tag.signature { background: rgba(196,30,58,0.1); color: #E85A70; border-color: rgba(196,30,58,0.25); }
+
+  .card-badge-meat {
+    display: inline-flex; align-items:center; gap:5px;
+    font-family:'Montserrat',sans-serif; font-size:.65rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:1px;
+    color: var(--fire);
+  }
+
+  /* ── FEATURED / HERO CARD ── */
+  .menu-card.featured {
+    grid-column: 1/-1;
+    background: linear-gradient(135deg, #1c1309 0%, #221508 50%, #1a0f07 100%);
+    border-color: rgba(218,165,32,0.35);
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 20px; align-items: center;
+    padding: 32px;
+  }
+  .featured-left {}
+  .featured-right {
+    text-align:center;
+    padding: 20px 28px;
+    border-left: 1px solid var(--border);
+  }
+  .featured-price {
+    font-family:'Bebas Neue',cursive;
+    font-size:3.5rem; letter-spacing:2px;
+    background: linear-gradient(135deg, var(--gold-light), var(--fire));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  }
+  .featured-unit { font-family:'Montserrat',sans-serif; font-size:.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+  .featured-badge {
+    font-family:'Bebas Neue',cursive; letter-spacing:2px;
+    background: linear-gradient(90deg, var(--fire), #C41E3A);
+    color:white; padding:6px 16px; border-radius:4px; font-size:.9rem;
+    display:inline-block; margin-bottom:12px;
+  }
+
+  /* ── SECTION BREAK ── */
+  .section-break {
+    max-width:1200px; margin: 40px auto 0;
+    padding: 0 40px;
+  }
+  .section-break-inner {
+    height:1px;
+    background: linear-gradient(90deg, transparent, rgba(218,165,32,0.2), transparent);
+  }
+
+  /* ── FULL-WIDTH PROMO BANNER ── */
+  .promo-banner {
+    margin: 48px 40px;
+    background: linear-gradient(135deg, #1c1309 0%, #221508 100%);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 40px;
+    display: flex; align-items:center; justify-content:space-between;
+    gap:24px; flex-wrap:wrap;
+    max-width: 1200px; margin: 48px auto;
+    position:relative; overflow:hidden;
+  }
+  .promo-banner::before {
+    content:'';
+    position:absolute; top:0; left:0; right:0; height:3px;
+    background: linear-gradient(90deg, #3E1A00, #DAA520, #E25822, #DAA520, #3E1A00);
+  }
+  .promo-text h3 {
+    font-family:'Bebas Neue',cursive; font-size:1.8rem; letter-spacing:3px; color:var(--gold);
+    margin-bottom:6px;
+  }
+  .promo-text p { font-size:.9rem; color:var(--tan); }
+  .promo-fire { font-size:3rem; filter:drop-shadow(0 0 12px rgba(226,88,34,0.6)); animation:flicker 1.5s ease-in-out infinite alternate; }
+
+  /* ── SOLD-OUT OVERLAY ── */
+  .menu-card.sold-out { opacity:.55; pointer-events:none; }
+  .sold-out-badge {
+    position:absolute; top:14px; right:14px;
+    background: rgba(196,30,58,0.85); color:white;
+    font-family:'Montserrat',sans-serif; font-size:.65rem; font-weight:700;
+    letter-spacing:1px; text-transform:uppercase;
+    padding:4px 10px; border-radius:4px;
+  }
+
+  /* ── BACK TO TOP ── */
+  .back-to-top {
+    position:fixed; bottom:28px; right:28px; z-index:900;
+    width:48px; height:48px; border-radius:50%;
+    background: linear-gradient(135deg, #8B4513, #E25822);
+    border: 1px solid var(--gold);
+    color:var(--gold); font-size:1.2rem;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; box-shadow:0 4px 16px rgba(226,88,34,0.4);
+    transition: transform .2s, box-shadow .2s;
+    text-decoration:none;
+  }
+  .back-to-top:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(226,88,34,0.5); }
+
+  /* ── NO RESULTS ── */
+  .no-results { text-align:center; padding:80px 24px; color:var(--muted); font-style:italic; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .menu-grid { grid-template-columns: 1fr; padding: 0 16px; }
+    .cat-header { padding: 40px 16px 16px; }
+    .cat-subtitle, .promo-banner { padding-left:16px; padding-right:16px; margin-left:16px; margin-right:16px; }
+    .menu-card.featured { grid-template-columns:1fr; }
+    .featured-right { border-left:none; border-top:1px solid var(--border); }
+    .hero-title { font-size: clamp(4rem, 18vw, 6rem); }
+    .nav-links { display:none; }
+  }
+
+  /* ── EMBER FLOATING ELEMENTS ── */
+  .ember-float {
+    position:fixed; pointer-events:none; z-index:0;
+    animation: emberRise linear infinite;
+    opacity:0;
+    border-radius:50%;
+    background: radial-gradient(circle, #E25822, #C41E3A, transparent);
+  }
+  @keyframes emberRise {
+    0% { transform:translateY(100vh) translateX(0) scale(1); opacity:0; }
+    10% { opacity:.8; }
+    90% { opacity:.3; }
+    100% { transform:translateY(-20vh) translateX(var(--drift)) scale(.3); opacity:0; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="ember-canvas"></canvas>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="index.html" class="nav-logo">
+    <span class="nav-logo-flame">🔥</span>
+    SMOKE SESSIONS
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="menu.html" class="active">Menu</a></li>
+    <li><a href="daily-specials.html">Specials</a></li>
+    <li><a href="live-update-inventory.html">What's Smoking</a></li>
+    <li><a href="order-online.html">Order Online</a></li>
+    <li><a href="waitlist-guest-form.html">Waitlist</a></li>
+    <li><a href="pit-ai-chat.html">Pit Boss Chat</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-eyebrow">🔥 Central Texas Style BBQ 🔥</div>
+  <h1 class="hero-title">THE MENU</h1>
+  <p class="hero-sub">Post oak–fired, low & slow, never rushed. Every cut earned its place on this board.</p>
+  <div class="hero-divider"></div>
+</section>
+
+<!-- FILTER BAR -->
+<div class="filter-bar" id="filterBar">
+  <button class="pill active" data-cat="all">All</button>
+  <button class="pill" data-cat="Smoked Meats">🥩 Smoked Meats</button>
+  <button class="pill" data-cat="Plates">🍽 Plates</button>
+  <button class="pill" data-cat="Specialty">⭐ Specialty</button>
+  <button class="pill" data-cat="Sides">🌽 Sides</button>
+  <button class="pill" data-cat="Desserts">🍰 Desserts</button>
+  <button class="pill" data-cat="Drinks">🥤 Drinks</button>
+</div>
+
+<!-- MENU BODY -->
+<main class="menu-body" id="menuBody">
+  <!-- Rendered by JS -->
+</main>
+
+<a href="#top" class="back-to-top">↑</a>
+
+<script src="holysmokes-api.js"></script>
+<script>
+// ── MENU DATA ──
+var MENU_DATA = [
+  // ── SMOKED MEATS ──
+  { name:'Brisket', desc:'Prime USDA Choice beef brisket, 14-hour post oak smoke. Hand-sliced to order, bark on every cut.', price:26, unit:'per lb', cat:'Smoked Meats', tags:['Signature','Best Seller'], isMeat:true, featured:true },
+  { name:'Beef Ribs (Dino)', desc:'Massive plate ribs — 10-hour smoke until they pull clean from the bone. Limited quantity daily.', price:32, unit:'per lb', cat:'Smoked Meats', tags:['Signature','Limited'], isMeat:true },
+  { name:'Spare Ribs', desc:'St. Louis-style spare ribs, dry-rubbed with our house seasoning and smoked over post oak until tender.', price:22, unit:'per lb', cat:'Smoked Meats', tags:['Hot Item'], isMeat:true },
+  { name:'Pulled Pork', desc:'Pork shoulder smoked 12 hours until it surrenders. Pulled by hand, never chopped.', price:18, unit:'per lb', cat:'Smoked Meats', tags:[], isMeat:true },
+  { name:'Turkey Breast', desc:'Whole breast, herb-brined overnight, then smoked slow. Incredibly juicy — no injections.', price:20, unit:'per lb', cat:'Smoked Meats', tags:['Fan Favorite'], isMeat:true },
+  { name:'Sausage Links', desc:'House-made beef & pork sausage, coarse-ground with garlic, black pepper and jalapeño.', price:16, unit:'per lb', cat:'Smoked Meats', tags:['House-Made'], isMeat:true },
+  { name:'Smoked Chicken (Half)', desc:'Half bird, dry-rubbed and smoked over pecan wood. Crisp skin, juicy meat.', price:14, unit:'per half', cat:'Smoked Meats', tags:[], isMeat:true },
+  { name:'Burnt Ends (Point Only)', desc:'Brisket point cubed, sauced, and returned to the smoker until caramelized and smoky-sweet.', price:24, unit:'per lb', cat:'Smoked Meats', tags:['Signature','Limited'], isMeat:true },
+
+  // ── PLATES ──
+  { name:'Brisket Plate', desc:'Sliced brisket with bark, pickles, onions, and your choice of 2 sides. White bread included.', price:19, unit:'w/ 2 sides', cat:'Plates', tags:[], isMeat:false },
+  { name:"Pitmaster's Pick Plate", desc:"The chef's daily selection of 3 premium meats with 2 sides. Changes based on what's ready.", price:28, unit:'3 meats + 2 sides', cat:'Plates', tags:['Best Value','Signature'], isMeat:false },
+  { name:'Combo Plate', desc:'Your choice of any 2 meats, any 2 sides, pickles, onions & white bread.', price:22, unit:'2 meats + 2 sides', cat:'Plates', tags:[], isMeat:false },
+  { name:'Pulled Pork Plate', desc:'Pulled pork piled high with your choice of 2 sides. Sauced or naked.', price:15, unit:'w/ 2 sides', cat:'Plates', tags:[], isMeat:false },
+  { name:'Rib Plate', desc:'Spare ribs by the half rack with 2 sides — the weekend staple.', price:18, unit:'w/ 2 sides', cat:'Plates', tags:[], isMeat:false },
+  { name:'Turkey Plate', desc:'Thick-sliced smoked turkey with 2 sides. Light and satisfying.', price:16, unit:'w/ 2 sides', cat:'Plates', tags:[], isMeat:false },
+  { name:'Sausage & Ribs Plate', desc:'Two sausage links and a half-pound of spare ribs with 2 sides.', price:20, unit:'w/ 2 sides', cat:'Plates', tags:[], isMeat:false },
+  { name:'Family Pack (feeds 4-6)', desc:'4 lbs mixed meat, full-size sides (3 choices), bread, pickles & sauce. Great for groups.', price:89, unit:'serves 4-6', cat:'Plates', tags:['Party Size'], isMeat:false },
+
+  // ── SPECIALTY ──
+  { name:'Brisket Burger', desc:'Hand-pressed ground brisket patty, smoked gouda, pickled jalapeño, crispy onion strings on a brioche bun.', price:16, unit:'', cat:'Specialty', tags:['Crowd Pleaser'], isMeat:false },
+  { name:'Smoked Brisket Egg Rolls', desc:'Pulled brisket, pepper jack, pickled jalapeños in crispy wonton wrappers. Served with chipotle ranch.', price:12, unit:'4 pcs', cat:'Specialty', tags:['Fan Favorite'], isMeat:false },
+  { name:'Loaded BBQ Nachos', desc:'Tortilla chips smothered in queso, pulled pork, jalapeños, jalapeño slaw & pickled red onions. Shareable.', price:14, unit:'', cat:'Specialty', tags:['Shareable'], isMeat:false },
+  { name:'Smoked Wings', desc:'Jumbo wings dry-rubbed and smoked, then flash-fried for crispy skin. Choice of sauce.', price:13, unit:'6 pcs', cat:'Specialty', tags:['Hot Item'], isMeat:false },
+  { name:'Burnt End Tacos', desc:'Three street tacos loaded with burnt ends, pickled red onion, cilantro & chipotle crema on flour tortillas.', price:15, unit:'3 tacos', cat:'Specialty', tags:['Signature'], isMeat:false },
+  { name:'BBQ Grilled Cheese', desc:'Thick-cut white bread with smoked brisket, sharp cheddar & house BBQ sauce. Griddled golden.', price:12, unit:'', cat:'Specialty', tags:[], isMeat:false },
+  { name:'Smoked Mac Attack', desc:'Our 3-cheese mac topped with pulled pork, crumbled sausage & crispy jalapeños. A full meal.', price:16, unit:'', cat:'Specialty', tags:['Best Seller'], isMeat:false },
+
+  // ── SIDES ──
+  { name:'Mac & Cheese', desc:'Three-cheese blend (gouda, cheddar, gruyere) baked with a crunchy breadcrumb top.', price:5, unit:'', cat:'Sides', tags:['Best Seller'], isMeat:false },
+  { name:'Baked Beans', desc:'Slow-cooked pinto beans with smoked burnt ends, brown sugar, and chipotle.', price:5, unit:'', cat:'Sides', tags:[], isMeat:false },
+  { name:'Coleslaw', desc:'Tangy vinegar-dressed slaw with celery seed. Bright and crunchy.', price:4, unit:'', cat:'Sides', tags:[], isMeat:false },
+  { name:'Potato Salad', desc:"Classic Texas-style with mustard, dill, hard-boiled egg & celery. Grandma's recipe.", price:4, unit:'', cat:'Sides', tags:['House Favorite'], isMeat:false },
+  { name:'Jalapeño Cornbread', desc:'Cast-iron skillet cornbread with roasted jalapeños, honey butter on the side.', price:4, unit:'', cat:'Sides', tags:['House-Made'], isMeat:false },
+  { name:'Corn Pudding', desc:'Creamy sweet corn casserole — sweet enough to almost be dessert. Almost.', price:5, unit:'', cat:'Sides', tags:[], isMeat:false },
+  { name:'Collard Greens', desc:'Braised slow with smoked ham hock, cider vinegar and red pepper flake.', price:5, unit:'', cat:'Sides', tags:[], isMeat:false },
+  { name:'Fried Okra', desc:'Cornmeal-crusted and fried to a golden crisp. Perfect with ranch or hot sauce.', price:5, unit:'', cat:'Sides', tags:[], isMeat:false },
+  { name:'Jalapeño Creamed Corn', desc:'Texas-style creamed corn with roasted jalapeños and a touch of cream cheese.', price:5, unit:'', cat:'Sides', tags:[], isMeat:false },
+  { name:'Pickled Jalapeños & Onions', desc:'House-pickled — bright, tangy, the perfect palate cut between bites of fat-rich brisket.', price:3, unit:'', cat:'Sides', tags:['Complimentary w/ Plate'], isMeat:false },
+
+  // ── DESSERTS ──
+  { name:'Pecan Pie', desc:"Classic Texas pecan pie, house-made with Karo syrup and a buttery scratch crust. Served warm.", price:7, unit:'per slice', cat:'Desserts', tags:['House-Made'], isMeat:false },
+  { name:'Banana Pudding', desc:'Layers of vanilla wafers, fresh banana, homemade pudding and whipped cream. The real deal.', price:6, unit:'per cup', cat:'Desserts', tags:['Best Seller'], isMeat:false },
+  { name:'Peach Cobbler', desc:'Fresh peach cobbler with a buttery biscuit top, served warm with a scoop of vanilla ice cream.', price:7, unit:'per serving', cat:'Desserts', tags:['Seasonal'], isMeat:false },
+  { name:'Smoked Bread Pudding', desc:'Old-fashioned bread pudding made from leftover jalapeño cornbread with whiskey caramel sauce.', price:8, unit:'per serving', cat:'Desserts', tags:['Signature','House-Made'], isMeat:false },
+
+  // ── DRINKS ──
+  { name:'Sweet Tea', desc:"Texas sweet tea brewed daily — proper sweet. Gallon jugs available to-go.", price:3, unit:'32 oz', cat:'Drinks', tags:[], isMeat:false },
+  { name:'Unsweet Tea', desc:'Fresh-brewed unsweetened black tea. Add your own sugar at the table.', price:3, unit:'32 oz', cat:'Drinks', tags:[], isMeat:false },
+  { name:'Lemonade', desc:'House-squeezed lemonade. Also available strawberry or jalapeño–lime style.', price:4, unit:'', cat:'Drinks', tags:['House-Made'], isMeat:false },
+  { name:'Canned Sodas', desc:'Coke, Diet Coke, Dr Pepper, Sprite, Root Beer.', price:2.5, unit:'', cat:'Drinks', tags:[], isMeat:false },
+  { name:'Bottled Water', desc:'Aquafina still or sparkling water.', price:2, unit:'', cat:'Drinks', tags:[], isMeat:false },
+  { name:'Lone Star (Longneck)', desc:"Because every good BBQ plate deserves a cold one. Texas' own.", price:5, unit:'', cat:'Drinks', tags:['Texas Proud'], isMeat:false },
+  { name:'Shiner Bock', desc:'The gold standard Texas craft lager — malty, smooth, pairs perfect with smoke.', price:5.5, unit:'', cat:'Drinks', tags:['Texas Proud'], isMeat:false },
+];
+
+var CATEGORY_META = {
+  'Smoked Meats': { icon:'🥩', sub:'All meats smoked daily on post oak wood. Sold by weight, sliced to order.' },
+  'Plates':       { icon:'🍽', sub:'Every plate includes your choice of 2 sides (unless noted), pickles, onion & white bread.' },
+  'Specialty':    { icon:'⭐', sub:'Pit-inspired creations that go beyond the board — elevated BBQ fare.' },
+  'Sides':        { icon:'🌽', sub:'Because the sides matter just as much. All made in-house daily.' },
+  'Desserts':     { icon:'🍰', sub:'End it right. House-made, worth saving room for.' },
+  'Drinks':       { icon:'🥤', sub:'From sweet tea to cold longnecks — the perfect pairing for smoke.' },
+};
+
+var CATEGORY_ORDER = ['Smoked Meats','Plates','Specialty','Sides','Desserts','Drinks'];
+
+var currentCat = 'all';
+
+function formatPrice(p) {
+  if (p === Math.floor(p)) return '$' + p;
+  return '$' + p.toFixed(2);
+}
+
+function getTagClass(tag) {
+  var hot = ['Hot Item','Best Seller','Fan Favorite','Crowd Pleaser','Limited'];
+  var sig = ['Signature','House-Made','House Favorite'];
+  if (hot.some(function(h){ return tag.indexOf(h)>-1; })) return 'hot';
+  if (sig.some(function(s){ return tag.indexOf(s)>-1; })) return 'signature';
+  return '';
+}
+
+function buildCard(item) {
+  var tagHtml = item.tags.map(function(t){
+    return '<span class="card-tag ' + getTagClass(t) + '">' + t + '</span>';
+  }).join('');
+
+  var isFeatured = item.featured ? ' featured' : '';
+  var isMeatClass = item.isMeat ? ' is-meat' : '';
+
+  if (item.featured) {
+    return '<div class="menu-card featured' + isMeatClass + '">' +
+      '<div class="featured-left">' +
+        '<div class="featured-badge">🔥 Pit Star</div>' +
+        '<div class="card-name" style="font-size:1.5rem;margin-bottom:10px;">' + item.name + '</div>' +
+        '<div class="card-desc" style="margin-bottom:14px;">' + item.desc + '</div>' +
+        '<div class="card-tags">' + tagHtml + '</div>' +
+      '</div>' +
+      '<div class="featured-right">' +
+        '<div class="featured-price">' + formatPrice(item.price) + '</div>' +
+        '<div class="featured-unit">' + (item.unit || '&nbsp;') + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  return '<div class="menu-card' + isMeatClass + '">' +
+    '<div class="card-top">' +
+      '<div class="card-name">' + item.name + '</div>' +
+      '<div>' +
+        '<div class="card-price">' + formatPrice(item.price) + '</div>' +
+        (item.unit ? '<div class="card-unit">' + item.unit + '</div>' : '') +
+      '</div>' +
+    '</div>' +
+    '<div class="card-desc">' + item.desc + '</div>' +
+    (tagHtml ? '<div class="card-tags">' + tagHtml + '</div>' : '') +
+  '</div>';
+}
+
+function render() {
+  var body = document.getElementById('menuBody');
+  var html = '';
+  var cats = currentCat === 'all' ? CATEGORY_ORDER : [currentCat];
+
+  cats.forEach(function(cat, ci) {
+    var items = MENU_DATA.filter(function(m){ return m.cat === cat; });
+    if (!items.length) return;
+
+    var meta = CATEGORY_META[cat] || { icon:'🔥', sub:'' };
+    if (ci > 0) html += '<div class="section-break"><div class="section-break-inner"></div></div>';
+
+    html += '<div class="cat-header">' +
+      '<span class="cat-icon">' + meta.icon + '</span>' +
+      '<span class="cat-name">' + cat + '</span>' +
+      '<div class="cat-line"></div>' +
+    '</div>';
+    if (meta.sub) html += '<div class="cat-subtitle">' + meta.sub + '</div>';
+
+    html += '<div class="menu-grid">';
+    items.forEach(function(item){ html += buildCard(item); });
+    html += '</div>';
+
+    // Insert promo after Smoked Meats
+    if (cat === 'Smoked Meats' && currentCat === 'all') {
+      html += '<div class="promo-banner" style="max-width:1200px;margin:40px auto;">' +
+        '<div class="promo-text">' +
+          '<h3>🔥 The Pitmaster\'s Promise</h3>' +
+          '<p>Everything is smoked fresh daily. When it\'s gone, it\'s gone. Get here early — brisket sells out by 2pm on weekends.</p>' +
+        '</div>' +
+        '<span class="promo-fire">🪵</span>' +
+      '</div>';
+    }
+    if (cat === 'Plates' && currentCat === 'all') {
+      html += '<div class="promo-banner" style="max-width:1200px;margin:40px auto;">' +
+        '<div class="promo-text">' +
+          '<h3>🌽 Sides Available</h3>' +
+          '<p>Mac & Cheese · Coleslaw · Baked Beans · Potato Salad · Cornbread · Corn Pudding · Collard Greens · Fried Okra</p>' +
+        '</div>' +
+        '<span class="promo-fire">🌽</span>' +
+      '</div>';
+    }
+  });
+
+  if (!html) html = '<div class="no-results">Nothing found. Try a different category.</div>';
+  body.innerHTML = html;
+}
+
+// ── FILTER PILLS ──
+document.getElementById('filterBar').addEventListener('click', function(e) {
+  var btn = e.target.closest('.pill');
+  if (!btn) return;
+  document.querySelectorAll('.pill').forEach(function(p){ p.classList.remove('active'); });
+  btn.classList.add('active');
+  currentCat = btn.dataset.cat;
+  render();
+  window.scrollTo({ top: document.querySelector('.filter-bar').offsetTop - 70, behavior:'smooth' });
+});
+
+// ── EMBER CANVAS ──
+(function() {
+  var canvas = document.getElementById('ember-canvas');
+  var ctx = canvas.getContext('2d');
+  var embers = [];
+  var W, H;
+
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize);
+  resize();
+
+  for (var i = 0; i < 60; i++) {
+    embers.push({
+      x: Math.random() * 1200,
+      y: Math.random() * 1200,
+      r: Math.random() * 2.5 + 0.5,
+      speed: Math.random() * .8 + .3,
+      drift: (Math.random() - .5) * .5,
+      life: Math.random(),
+      maxLife: Math.random() * 200 + 100,
+      color: Math.random() > .5 ? '#E25822' : '#DAA520'
+    });
+  }
+
+  function tick() {
+    ctx.clearRect(0,0,W,H);
+    embers.forEach(function(e) {
+      e.y -= e.speed;
+      e.x += e.drift;
+      e.life += 1/e.maxLife;
+      if (e.life >= 1 || e.y < -10) {
+        e.y = H + 10;
+        e.x = Math.random() * W;
+        e.life = 0;
+        e.maxLife = Math.random() * 200 + 100;
+      }
+      var alpha = Math.sin(e.life * Math.PI) * 0.7;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      var g = ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r*3);
+      g.addColorStop(0, e.color);
+      g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.r*3, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+// ── INIT ──
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What's Smoking | Smoke Sessions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-dk:#0d0806;--bg-dark:#1a120e;--bg-card:#221a14;--bg-card-hover:#2d2118;
+  --fire-orange:#E25822;--gold:#DAA520;--gold-light:#F0C050;--ember-red:#C41E3A;
+  --amber:#FF8C00;--text-primary:#F5E6D3;--text-secondary:#B8A08A;--text-muted:#7A6B5A;
+  --border-color:rgba(218,165,32,0.12);--border-glow:rgba(218,165,32,0.35);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg-dk);color:var(--text-primary);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+#ember-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.45}
+
+/* ── HEADER ── */
+.site-header{background:rgba(13,8,6,0.97);border-bottom:1px solid var(--border-color);position:sticky;top:0;z-index:200;backdrop-filter:blur(20px)}
+.header-inner{max-width:1280px;margin:0 auto;padding:0 24px}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:14px 0 10px}
+.brand{display:flex;align-items:center;gap:14px;text-decoration:none}
+.brand-flame{width:50px;height:50px;background:radial-gradient(circle at 50% 120%,#FF8C00,#E25822,#C41E3A);border-radius:50% 50% 50% 50%/40% 40% 60% 60%;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 0 24px rgba(226,88,34,0.6);animation:flamePulse 2s ease-in-out infinite alternate;flex-shrink:0}
+@keyframes flamePulse{0%{box-shadow:0 0 15px rgba(226,88,34,0.4);transform:scale(1)}100%{box-shadow:0 0 30px rgba(226,88,34,0.8);transform:scale(1.05)}}
+.brand-text h1{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--gold);line-height:1}
+.brand-text .tagline{font-family:'Playfair Display',serif;font-style:italic;font-size:11px;color:var(--text-muted)}
+.header-nav{display:flex;gap:4px;padding:8px 0 12px;overflow-x:auto;scrollbar-width:none}
+.header-nav::-webkit-scrollbar{display:none}
+.header-nav a{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);text-decoration:none;padding:7px 14px;border-radius:6px;white-space:nowrap;transition:all 0.2s ease}
+.header-nav a:hover{color:var(--gold);background:rgba(218,165,32,0.08)}
+.header-nav a.active{color:var(--gold);background:rgba(218,165,32,0.12)}
+
+/* ── HERO ── */
+.hero{background:linear-gradient(135deg,#3E1A00 0%,#1a120e 50%,var(--bg-dk) 100%);padding:48px 24px 36px;text-align:center;position:relative;overflow:hidden;border-bottom:1px solid var(--border-color)}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(226,88,34,0.2) 0%,transparent 70%)}
+.hero-badge{display:inline-block;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:var(--amber);border:1px solid rgba(255,140,0,0.3);border-radius:20px;padding:5px 16px;margin-bottom:16px;background:rgba(255,140,0,0.08)}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,8vw,82px);letter-spacing:6px;color:var(--text-primary);line-height:0.95;margin-bottom:12px;position:relative}
+.hero h1 span{color:var(--gold)}
+.hero .subtitle{font-family:'Playfair Display',serif;font-style:italic;font-size:17px;color:var(--text-secondary)}
+
+/* ── NEXT OFF SMOKER BANNER ── */
+.next-off-banner{max-width:1280px;margin:24px auto 0;padding:0 24px;position:relative;z-index:1}
+.next-off-card{background:linear-gradient(135deg,#2a0e00,#3E1A00,#1a0800);border:2px solid rgba(226,88,34,0.5);border-radius:16px;padding:24px 28px;display:flex;align-items:center;gap:28px;flex-wrap:wrap;position:relative;overflow:hidden;box-shadow:0 0 40px rgba(226,88,34,0.15)}
+.next-off-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 0% 50%,rgba(226,88,34,0.12) 0%,transparent 60%)}
+.nob-flame{font-size:56px;animation:smokePulse 1.5s ease-in-out infinite alternate;flex-shrink:0}
+@keyframes smokePulse{0%{transform:scale(1) rotate(-2deg);filter:drop-shadow(0 0 8px rgba(226,88,34,0.5))}100%{transform:scale(1.08) rotate(2deg);filter:drop-shadow(0 0 20px rgba(226,88,34,0.9))}}
+.nob-info{flex:1;min-width:200px}
+.nob-label{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--amber);margin-bottom:4px}
+.nob-meat{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:3px;color:var(--gold)}
+.nob-desc{font-size:13px;color:var(--text-secondary);margin-top:2px}
+.nob-timer{text-align:center;flex-shrink:0}
+.nob-timer-label{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px}
+.nob-countdown{font-family:'Bebas Neue',sans-serif;font-size:52px;color:var(--fire-orange);letter-spacing:4px;line-height:1;text-shadow:0 0 20px rgba(226,88,34,0.6)}
+.nob-countdown-sub{font-size:11px;color:var(--text-muted);margin-top:2px;font-family:'Montserrat',sans-serif;text-transform:uppercase;letter-spacing:1px}
+.nob-queue{display:flex;flex-direction:column;gap:6px;border-left:1px solid rgba(218,165,32,0.15);padding-left:24px;min-width:180px}
+.nob-queue-label{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:2px}
+.nob-queue-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)}
+.nob-queue-item .qi-time{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--gold);letter-spacing:1px;min-width:52px}
+
+/* ── STATUS SUMMARY ── */
+.status-section{max-width:1280px;margin:24px auto 0;padding:0 24px;position:relative;z-index:1}
+.status-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(min-width:600px){.status-bar{grid-template-columns:repeat(3,1fr)}}
+.stat-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:20px;text-align:center;transition:all 0.25s ease}
+.stat-card:hover{border-color:var(--border-glow);transform:translateY(-2px)}
+.stat-number{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:2px;line-height:1}
+.stat-label{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-top:4px}
+.stat-avail .stat-number{color:#6fcf6f;text-shadow:0 0 20px rgba(111,207,111,0.4)}
+.stat-low .stat-number{color:var(--amber);text-shadow:0 0 20px rgba(255,140,0,0.4)}
+.stat-soldout .stat-number{color:var(--ember-red);text-shadow:0 0 20px rgba(196,30,58,0.4)}
+
+/* ── CONTROLS BAR ── */
+.controls-section{max-width:1280px;margin:16px auto 0;padding:0 24px;position:relative;z-index:1}
+.controls-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:14px 20px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px}
+.filter-bar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex:1}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-btn{font-family:'Montserrat',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;padding:8px 18px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-dk);color:var(--text-secondary);cursor:pointer;white-space:nowrap;transition:all 0.2s ease;min-height:38px}
+.filter-btn:hover{background:var(--bg-card-hover);color:var(--text-primary);border-color:rgba(218,165,32,0.3)}
+.filter-btn.active{background:linear-gradient(135deg,#3E1A00,#8B4513);color:var(--gold-light);border-color:var(--gold);box-shadow:0 0 12px rgba(218,165,32,0.2)}
+.refresh-btn{font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;padding:10px 20px;border-radius:8px;border:none;background:linear-gradient(135deg,#3E1A00,#8B4513);color:var(--gold);cursor:pointer;transition:all 0.2s ease;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0}
+.refresh-btn:hover{box-shadow:0 0 16px rgba(218,165,32,0.3)}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.last-updated-small{font-size:11px;color:var(--text-muted);white-space:nowrap}
+
+/* ── INVENTORY GRID ── */
+.main-section{max-width:1280px;margin:24px auto;padding:0 24px 120px;position:relative;z-index:1}
+.inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+@media(min-width:1100px){.inv-grid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}}
+@media(max-width:600px){.inv-grid{grid-template-columns:1fr}.header-nav{display:none}}
+
+.inv-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;padding:22px;position:relative;overflow:hidden;transition:all 0.3s ease}
+.inv-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;transition:opacity 0.3s ease}
+.inv-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.5)}
+.inv-card.avail::before{background:linear-gradient(90deg,transparent,#4CAF50,transparent);opacity:0.8}
+.inv-card.low{border-color:rgba(255,140,0,0.3)}
+.inv-card.low::before{background:linear-gradient(90deg,transparent,var(--amber),transparent);opacity:0.8}
+.inv-card.sold{border-color:rgba(196,30,58,0.2);opacity:0.55}
+.inv-card.sold::before{background:linear-gradient(90deg,transparent,var(--ember-red),transparent);opacity:0.5}
+.inv-card:hover::before{opacity:1}
+
+.cat-pill{position:absolute;top:14px;right:14px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:3px 9px;border-radius:10px;background:rgba(218,165,32,0.1);color:var(--gold-light);border:1px solid rgba(218,165,32,0.2)}
+.item-name{font-family:'Montserrat',sans-serif;font-weight:700;font-size:18px;color:var(--text-primary);margin-bottom:4px;padding-right:80px;line-height:1.2}
+.item-desc{font-size:12px;color:var(--text-secondary);margin-bottom:14px;font-style:italic}
+.item-meta{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.item-price{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--gold);letter-spacing:2px;line-height:1}
+.item-unit{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-left:2px}
+.item-qty{text-align:right}
+.qty-num{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;line-height:1}
+.qty-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px}
+.qty-avail{color:#6fcf6f}
+.qty-low{color:var(--amber)}
+.qty-sold{color:var(--ember-red)}
+.status-badge{display:inline-flex;align-items:center;gap:5px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:4px 12px;border-radius:20px}
+.status-avail{background:rgba(50,180,50,0.1);color:#6fcf6f;border:1px solid rgba(50,180,50,0.2)}
+.status-low{background:rgba(255,140,0,0.1);color:var(--amber);border:1px solid rgba(255,140,0,0.25)}
+.status-sold{background:rgba(196,30,58,0.1);color:#e06080;border:1px solid rgba(196,30,58,0.2)}
+
+/* SMOKER COUNTDOWN ON CARD */
+.smoker-countdown-block{margin-top:14px;padding-top:14px;border-top:1px solid var(--border-color)}
+.sc-label{font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--fire-orange);margin-bottom:6px}
+.sc-bar-wrap{background:rgba(255,255,255,0.06);border-radius:6px;height:8px;overflow:hidden;margin-bottom:6px}
+.sc-bar{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--fire-orange),var(--gold));transition:width 1s linear}
+.sc-time{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--fire-orange);text-shadow:0 0 10px rgba(226,88,34,0.5)}
+.sc-sub{font-size:10px;color:var(--text-muted)}
+
+.empty-state{text-align:center;padding:80px 0;color:var(--text-muted);font-family:'Playfair Display',serif;font-style:italic}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:0.4}
+</style>
+</head>
+<body>
+<canvas id="ember-canvas"></canvas>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-top">
+      <a href="index.html" class="brand">
+        <div class="brand-flame">🔥</div>
+        <div class="brand-text"><h1>SMOKE SESSIONS</h1><div class="tagline">Central Texas Style Barbecue</div></div>
+      </a>
+    </div>
+    <nav class="header-nav">
+      <a href="index.html">Home</a>
+      <a href="customer.html">Menu</a>
+      <a href="daily-specials.html">Specials</a>
+      <a href="live-update-inventory.html" class="active">What's Smoking</a>
+      <a href="waitlist-guest-form.html">Waitlist</a>
+      <a href="order-online.html">Order Online</a>
+      <a href="pit-ai-chat.html">Pit Chat</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">🪵 Live From The Pit</div>
+  <h1>WHAT'S <span>SMOKING</span></h1>
+  <p class="subtitle">Real-time availability — straight from the smoker</p>
+</section>
+
+<!-- NEXT OFF THE SMOKER BANNER -->
+<div class="next-off-banner">
+  <div class="next-off-card">
+    <div class="nob-flame">🔥</div>
+    <div class="nob-info">
+      <div class="nob-label">🪵 Next Off The Smoker</div>
+      <div class="nob-meat" id="nextMeatName">Beef Ribs</div>
+      <div class="nob-desc" id="nextMeatDesc">Dino beef ribs — bone-in plate short ribs, 10-hour smoke</div>
+    </div>
+    <div class="nob-timer">
+      <div class="nob-timer-label">Ready In</div>
+      <div class="nob-countdown" id="nobCountdown">2:14:37</div>
+      <div class="nob-countdown-sub">hours : min : sec</div>
+    </div>
+    <div class="nob-queue">
+      <div class="nob-queue-label">Coming Up Next</div>
+      <div class="nob-queue-item"><span class="qi-time" id="qi1time">+3:30</span><span id="qi1name">Baby Back Ribs</span></div>
+      <div class="nob-queue-item"><span class="qi-time" id="qi2time">+5:00</span><span id="qi2name">Turkey Breast</span></div>
+      <div class="nob-queue-item"><span class="qi-time" id="qi3time">+6:45</span><span id="qi3name">Pulled Pork</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS SUMMARY -->
+<div class="status-section">
+  <div class="status-bar">
+    <div class="stat-card stat-avail">
+      <div class="stat-number" id="count-avail">--</div>
+      <div class="stat-label">✓ Available</div>
+    </div>
+    <div class="stat-card stat-low">
+      <div class="stat-number" id="count-low">--</div>
+      <div class="stat-label">⚡ Running Low</div>
+    </div>
+    <div class="stat-card stat-soldout">
+      <div class="stat-number" id="count-sold">--</div>
+      <div class="stat-label">✕ Sold Out</div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls-section">
+  <div class="controls-bar">
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-btn active" onclick="setFilter('all',this)">All Items</button>
+      <button class="filter-btn" onclick="setFilter('Smoked Meats',this)">🥩 Smoked Meats</button>
+      <button class="filter-btn" onclick="setFilter('Sides',this)">🥗 Sides</button>
+      <button class="filter-btn" onclick="setFilter('Specialty',this)">⭐ Specialty</button>
+      <button class="filter-btn" onclick="setFilter('Desserts',this)">🍮 Desserts</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
+      <span class="last-updated-small"><span class="sync-dot"></span> <span id="lastUpdated">Loading...</span></span>
+      <button class="refresh-btn" onclick="manualRefresh()">↻ Refresh</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVENTORY GRID -->
+<div class="main-section">
+  <div class="inv-grid" id="invGrid">
+    <div class="empty-state"><div class="empty-icon">🪵</div><p>Loading the pit...</p></div>
+  </div>
+</div>
+
+<script src="holysmokes-api.js"></script>
+<script>
+// EMBERS
+(function(){
+  var c=document.getElementById('ember-canvas');
+  var ctx=c.getContext('2d');var embers=[];
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  function rand(a,b){return a+Math.random()*(b-a);}
+  function Ember(){this.reset();}
+  Ember.prototype.reset=function(){
+    this.x=rand(0,c.width);this.y=c.height+rand(0,60);
+    this.vx=rand(-0.7,0.7);this.vy=rand(-1.4,-0.3);
+    this.r=rand(1,3.2);this.life=1;this.decay=rand(0.003,0.008);this.hue=rand(5,45);
+  };
+  for(var i=0;i<75;i++){var e=new Ember();e.y=rand(0,c.height);e.life=rand(0,1);embers.push(e);}
+  function frame(){
+    ctx.clearRect(0,0,c.width,c.height);
+    embers.forEach(function(e){
+      e.x+=e.vx+Math.sin(Date.now()/1800+e.y*0.01)*0.3;e.y+=e.vy;e.life-=e.decay;
+      if(e.life<=0||e.y<-20)e.reset();
+      ctx.save();ctx.globalAlpha=e.life*0.7;
+      var g=ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r*2.5);
+      g.addColorStop(0,'hsl('+e.hue+',100%,85%)');g.addColorStop(0.5,'hsl('+e.hue+',100%,55%)');g.addColorStop(1,'transparent');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(e.x,e.y,e.r*2.5,0,Math.PI*2);ctx.fill();ctx.restore();
+    });
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+// SMOKER SCHEDULES (realtime countdown from now)
+var SMOKER_QUEUE=[
+  {name:'Beef Ribs',desc:'Dino beef ribs — bone-in plate short ribs, 10-hour smoke',hoursFromNow:2.25},
+  {name:'Baby Back Ribs',desc:'Pork baby backs — tender, fall-off-the-bone',hoursFromNow:5.75},
+  {name:'Turkey Breast',desc:'Herb-brined smoked turkey — juicy & golden',hoursFromNow:7.0},
+  {name:'Pulled Pork',desc:'Heritage pork shoulder — slow-smoked 12 hours',hoursFromNow:8.75}
+];
+
+// Build real target times from now
+var now=new Date();
+SMOKER_QUEUE.forEach(function(q){
+  q.targetTime=new Date(now.getTime()+q.hoursFromNow*3600*1000);
+});
+
+// SMOKER COUNTDOWN BANNER
+function updateNobCountdown(){
+  var now2=new Date();
+  var first=SMOKER_QUEUE[0];
+  var diff=first.targetTime-now2;
+  if(diff<0)diff=0;
+  var h=Math.floor(diff/3600000);
+  var m=Math.floor((diff%3600000)/60000);
+  var s=Math.floor((diff%60000)/1000);
+  document.getElementById('nobCountdown').textContent=
+    String(h)+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  document.getElementById('nextMeatName').textContent=first.name;
+  document.getElementById('nextMeatDesc').textContent=first.desc;
+  // Queue items
+  for(var i=1;i<=3;i++){
+    var qi=SMOKER_QUEUE[i];
+    if(!qi)continue;
+    var qd=qi.targetTime-now2;
+    if(qd<0)qd=0;
+    var qh=Math.floor(qd/3600000);
+    var qm=Math.floor((qd%3600000)/60000);
+    document.getElementById('qi'+i+'time').textContent='+'+String(qh)+'h '+String(qm).padStart(2,'0')+'m';
+    document.getElementById('qi'+i+'name').textContent=qi.name;
+  }
+}
+setInterval(updateNobCountdown,1000);
+updateNobCountdown();
+
+// PER-CARD SMOKER COUNTDOWNS (per-meat tracking)
+var MEAT_SMOKER_TIMES={
+  'Brisket':{targetTime:new Date(now.getTime()+1.5*3600*1000),totalHours:14},
+  'Beef Ribs':{targetTime:new Date(now.getTime()+2.25*3600*1000),totalHours:10},
+  'Baby Back Ribs':{targetTime:new Date(now.getTime()+5.75*3600*1000),totalHours:6},
+  'Turkey Breast':{targetTime:new Date(now.getTime()+7*3600*1000),totalHours:4},
+  'Spare Ribs':{targetTime:new Date(now.getTime()+3.5*3600*1000),totalHours:6},
+  'Pulled Pork':{targetTime:new Date(now.getTime()+8.75*3600*1000),totalHours:12},
+  'Sausage Links':{targetTime:new Date(now.getTime()+0.5*3600*1000),totalHours:3},
+  'Smoked Chicken':{targetTime:new Date(now.getTime()+1*3600*1000),totalHours:4}
+};
+
+function getMeatCountdown(meatName){
+  var mt=MEAT_SMOKER_TIMES[meatName];
+  if(!mt)return null;
+  var now2=new Date();
+  var diff=mt.targetTime-now2;
+  if(diff<0)return{h:0,m:0,s:0,pct:100};
+  var total=mt.totalHours*3600*1000;
+  var pct=100-(diff/total*100);
+  pct=Math.min(100,Math.max(0,pct));
+  return{h:Math.floor(diff/3600000),m:Math.floor((diff%3600000)/60000),s:Math.floor((diff%60000)/1000),pct:pct};
+}
+
+// INVENTORY
+var ITEM_DESCS={
+  'Brisket':'Prime USDA beef brisket — 14-hour post oak smoke',
+  'Pulled Pork':'Heritage pork shoulder — slow-smoked 12 hours',
+  'Spare Ribs':'St. Louis-style spare ribs — dry rubbed',
+  'Baby Back Ribs':'Pork baby backs — fall-off-the-bone perfection',
+  'Turkey Breast':'Whole herb-brined smoked turkey breast',
+  'Sausage Links':'House-made beef & jalapeño sausage',
+  'Beef Ribs':'Dino beef ribs — massive bone-in plate ribs',
+  'Smoked Chicken':'Whole half chicken — crispy skin',
+  'Smoked Duck':'Heritage duck — cherry wood smoke',
+  'Mac & Cheese':'Three-cheese blend with smoked gouda',
+  'Coleslaw':'Tangy apple cider vinegar coleslaw',
+  'Baked Beans':'Slow-cooked with smoked burnt ends',
+  'Potato Salad':'Classic yellow mustard potato salad',
+  'Burnt Ends':'Caramelized, crispy brisket point ends',
+  'Corn Pudding':'Sweet corn casserole with honey butter',
+  'Jalapeño Cornbread':'Cast-iron skillet cornbread',
+  'Collard Greens':'Braised with smoked ham hock',
+  'Fried Okra':'Cornmeal-crusted, fried golden'
+};
+
+var currentFilter='all';
+var inventoryData=[];
+
+function loadInventory(){
+  HolySmokesBBQ.getInventory(function(items){
+    if(!items||!items.length){seedInventory();return;}
+    inventoryData=items;
+    updateStats();
+    renderGrid();
+  });
+}
+
+function seedInventory(){
+  var seeds=[
+    {item:'Brisket',category:'Smoked Meats',status:'available',quantity:42,unit:'lb',price:26},
+    {item:'Pulled Pork',category:'Smoked Meats',status:'available',quantity:28,unit:'lb',price:18},
+    {item:'Spare Ribs',category:'Smoked Meats',status:'available',quantity:18,unit:'lb',price:22},
+    {item:'Baby Back Ribs',category:'Smoked Meats',status:'low',quantity:7,unit:'lb',price:24},
+    {item:'Turkey Breast',category:'Smoked Meats',status:'available',quantity:14,unit:'lb',price:20},
+    {item:'Sausage Links',category:'Smoked Meats',status:'available',quantity:32,unit:'lb',price:16},
+    {item:'Beef Ribs',category:'Smoked Meats',status:'low',quantity:4,unit:'lb',price:32},
+    {item:'Smoked Chicken',category:'Smoked Meats',status:'available',quantity:10,unit:'half',price:15},
+    {item:'Smoked Duck',category:'Smoked Meats',status:'sold_out',quantity:0,unit:'lb',price:28},
+    {item:'Mac & Cheese',category:'Sides',status:'available',quantity:20,unit:'serving',price:5},
+    {item:'Coleslaw',category:'Sides',status:'available',quantity:25,unit:'serving',price:4},
+    {item:'Baked Beans',category:'Sides',status:'available',quantity:18,unit:'serving',price:5},
+    {item:'Potato Salad',category:'Sides',status:'low',quantity:6,unit:'serving',price:4},
+    {item:'Jalapeño Cornbread',category:'Sides',status:'available',quantity:30,unit:'piece',price:4},
+    {item:'Burnt Ends',category:'Specialty',status:'low',quantity:3,unit:'lb',price:18},
+    {item:'Corn Pudding',category:'Sides',status:'sold_out',quantity:0,unit:'serving',price:5}
+  ];
+  seeds.forEach(function(s){HolySmokesBBQ.updateInventory(s);});
+  inventoryData=seeds;
+  updateStats();
+  renderGrid();
+}
+
+function updateStats(){
+  var avail=0,low=0,sold=0;
+  inventoryData.forEach(function(i){
+    if(i.status==='available')avail++;
+    else if(i.status==='low')low++;
+    else if(i.status==='sold_out')sold++;
+  });
+  document.getElementById('count-avail').textContent=avail;
+  document.getElementById('count-low').textContent=low;
+  document.getElementById('count-sold').textContent=sold;
+  document.getElementById('lastUpdated').textContent='Updated '+new Date().toLocaleTimeString();
+}
+
+function setFilter(cat,btn){
+  currentFilter=cat;
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  renderGrid();
+}
+
+function renderGrid(){
+  var filtered=currentFilter==='all'?inventoryData:inventoryData.filter(function(i){return i.category===currentFilter;});
+  var grid=document.getElementById('invGrid');
+  if(!filtered.length){grid.innerHTML='<div class="empty-state"><div class="empty-icon">🍖</div><p>No items in this category.</p></div>';return;}
+  var html='';
+  // Sort: available first, low, sold_out last
+  filtered=filtered.slice().sort(function(a,b){
+    var ord={'available':0,'low':1,'sold_out':2};
+    return (ord[a.status]||0)-(ord[b.status]||0);
+  });
+  filtered.forEach(function(item){
+    var status=item.status;
+    var cardCls='inv-card '+(status==='available'?'avail':status==='low'?'low':'sold');
+    var badge=status==='available'?'<span class="status-badge status-avail">✓ Available</span>':
+              status==='low'?'<span class="status-badge status-low">⚡ Running Low</span>':
+              '<span class="status-badge status-sold">✕ Sold Out</span>';
+    var qtyCls=status==='available'?'qty-avail':status==='low'?'qty-low':'qty-sold';
+    var price=item.price||'--';
+    var desc=ITEM_DESCS[item.item]||'';
+    // Smoker countdown block for meats
+    var smokerBlock='';
+    if(item.category==='Smoked Meats'&&status!=='sold_out'&&MEAT_SMOKER_TIMES[item.item]){
+      var cd=getMeatCountdown(item.item);
+      if(cd){
+        var timeStr=cd.h>0?(cd.h+'h '+String(cd.m).padStart(2,'0')+'m'):(String(cd.m).padStart(2,'0')+'m '+String(cd.s).padStart(2,'0')+'s');
+        var doneLbl=cd.h===0&&cd.m<10?'Ready soon!':'Next batch off the smoker';
+        smokerBlock='<div class="smoker-countdown-block"><div class="sc-label">🪵 '+doneLbl+'</div>'
+          +'<div class="sc-bar-wrap"><div class="sc-bar" id="bar-'+item.item.replace(/\s/g,'_')+'" style="width:'+cd.pct.toFixed(1)+'%"></div></div>'
+          +'<div class="sc-time" id="sct-'+item.item.replace(/\s/g,'_')+'">'+timeStr+'</div>'
+          +'<div class="sc-sub">Estimated time until next batch is ready</div>'
+          +'</div>';
+      }
+    }
+    html+='<div class="'+cardCls+'">'
+      +'<div class="cat-pill">'+item.category+'</div>'
+      +'<div class="item-name">'+item.item+'</div>'
+      +(desc?'<div class="item-desc">'+desc+'</div>':'')
+      +'<div class="item-meta">'
+        +'<div><div class="item-price">$'+(parseFloat(price)||0).toFixed(2)+'<span class="item-unit">/'+item.unit+'</span></div></div>'
+        +'<div class="item-qty"><div class="qty-num '+qtyCls+'">'+(item.quantity||0)+'</div><div class="qty-label">'+item.unit+' remaining</div></div>'
+      +'</div>'
+      +badge
+      +smokerBlock
+      +'</div>';
+  });
+  grid.innerHTML=html;
+}
+
+// Live countdown updater for cards
+function updateCardCountdowns(){
+  if(!inventoryData)return;
+  inventoryData.forEach(function(item){
+    if(item.category!=='Smoked Meats'||item.status==='sold_out'||!MEAT_SMOKER_TIMES[item.item])return;
+    var cd=getMeatCountdown(item.item);
+    if(!cd)return;
+    var key=item.item.replace(/\s/g,'_');
+    var timeEl=document.getElementById('sct-'+key);
+    var barEl=document.getElementById('bar-'+key);
+    if(timeEl){
+      var timeStr=cd.h>0?(cd.h+'h '+String(cd.m).padStart(2,'0')+'m'):(String(cd.m).padStart(2,'0')+'m '+String(cd.s).padStart(2,'0')+'s');
+      timeEl.textContent=timeStr;
+    }
+    if(barEl){barEl.style.width=cd.pct.toFixed(1)+'%';}
+  });
+}
+
+function manualRefresh(){
+  updateStats();
+  renderGrid();
+}
+
+// INIT
+window.addEventListener('DOMContentLoaded',function(){
+  loadInventory();
+  setInterval(function(){
+    updateCardCountdowns();
+    updateStats();
+  },1000);
+  setInterval(function(){
+    HolySmokesBBQ.getInventory(function(items){
+      if(items&&items.length){inventoryData=items;renderGrid();}
+    });
+  },30000);
+});
+</script>
+</body>
+</html>
