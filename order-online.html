@@ -1431,15 +1431,20 @@
     // CART PERSISTENCE (localStorage via API helper)
     // ============================================================
     function loadCart() {
-      var saved = HolySmokesBBQ._lsGet('cart');
-      if (saved && Array.isArray(saved)) {
-        cart = saved;
-      }
+      try {
+        var raw = localStorage.getItem('holysmokes_cart');
+        if (raw) {
+          var saved = JSON.parse(raw);
+          if (Array.isArray(saved)) cart = saved;
+        }
+      } catch (e) { /* silent - cart starts empty */ }
       updateCartUI();
     }
 
     function saveCart() {
-      HolySmokesBBQ._lsSet('cart', cart);
+      try {
+        localStorage.setItem('holysmokes_cart', JSON.stringify(cart));
+      } catch (e) { /* silent */ }
     }
 
     // ============================================================
@@ -1770,7 +1775,7 @@
       } catch (e) { /* silent */ }
 
       // Push order to Google Sheets via API
-      HolySmokesBBQ.addOrder({
+      if (typeof HolySmokesBBQ !== 'undefined' && HolySmokesBBQ.addOrder) HolySmokesBBQ.addOrder({
         number: orderNum,
         customer: name,
         phone: phone,
@@ -1781,6 +1786,7 @@
         total: total.toFixed(2),
         pickupTime: pickupTime
       }, function() { /* fire and forget */ });
+      }
 
       // Simulate processing delay
       setTimeout(function() {
@@ -1816,8 +1822,9 @@
     // START NEW ORDER
     // ============================================================
     function startNewOrder() {
-      document.getElementById('confirmationScreen').classList.remove('visible');
-      document.getElementById('confirmationScreen').style.display = 'none';
+      var conf = document.getElementById('confirmationScreen');
+      conf.classList.remove('visible');
+      conf.style.display = '';
       document.getElementById('mainContent').style.display = '';
 
       // Reset item quantities
