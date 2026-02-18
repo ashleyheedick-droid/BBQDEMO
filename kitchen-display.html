@@ -182,6 +182,16 @@
     border-bottom: 3px solid #DAA520;
   }
 
+  @keyframes col-bump {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.04); background: linear-gradient(135deg, #5a2800, #3E1A00); }
+    100% { transform: scale(1); }
+  }
+
+  .col-header.bumping {
+    animation: col-bump 0.4s ease-out;
+  }
+
   .col-header-progress {
     background: linear-gradient(135deg, #3E1A00, #221a14);
     color: #E25822;
@@ -258,6 +268,20 @@
 
   .order-card.status-ready {
     border-left: 5px solid #4CAF50;
+  }
+
+  .order-card.age-warn {
+    box-shadow: 0 0 12px rgba(255,193,7,0.15), inset 0 0 0 1px rgba(255,193,7,0.08);
+  }
+
+  .order-card.age-critical {
+    box-shadow: 0 0 18px rgba(196,30,58,0.25), inset 0 0 0 1px rgba(196,30,58,0.15);
+    animation: card-critical-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes card-critical-pulse {
+    0%, 100% { box-shadow: 0 0 18px rgba(196,30,58,0.25), inset 0 0 0 1px rgba(196,30,58,0.15); }
+    50% { box-shadow: 0 0 28px rgba(196,30,58,0.45), inset 0 0 0 1px rgba(196,30,58,0.3); }
   }
 
   /* ── Order Header ── */
@@ -529,6 +553,15 @@
   </div>
 </header>
 
+<!-- Demo controls -->
+<div id="demoBar" style="background:#120d09;border-bottom:1px solid rgba(218,165,32,0.1);padding:7px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+  <span style="font-family:'Montserrat',sans-serif;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#5a4a38;">Demo Controls:</span>
+  <button onclick="addDemoOrder()" style="font-family:'Montserrat',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.5px;padding:5px 14px;border-radius:6px;border:1px solid rgba(218,165,32,0.3);background:rgba(218,165,32,0.08);color:#DAA520;cursor:pointer;">+ Add Order</button>
+  <button onclick="clearCompleted()" style="font-family:'Montserrat',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.5px;padding:5px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#5a4a38;cursor:pointer;">Clear Completed</button>
+  <button onclick="resetToDemo()" style="font-family:'Montserrat',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.5px;padding:5px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#5a4a38;cursor:pointer;">Reset Demo</button>
+  <span id="demoOrderCounter" style="margin-left:auto;font-family:'Montserrat',sans-serif;font-size:.65rem;color:#5a4a38;"></span>
+</div>
+
 <!-- Refresh progress bar -->
 <div class="refresh-bar">
   <div class="refresh-bar-fill" id="refreshBar"></div>
@@ -608,6 +641,9 @@
       flash.classList.remove('active');
       void flash.offsetWidth;
       flash.classList.add('active');
+      // Column header bump
+      var colHdr = document.querySelector('.col-header-new');
+      if (colHdr) { colHdr.classList.remove('bumping'); void colHdr.offsetWidth; colHdr.classList.add('bumping'); setTimeout(function(){ colHdr.classList.remove('bumping'); }, 400); }
     } catch (e) { /* silent fail */ }
   }
 
@@ -633,43 +669,90 @@
     var now = Date.now();
     return [
       {
-        id: 'ORD001',
-        number: '#001',
-        customer: 'Mike R.',
+        id: 'ORD001', number: '#001', customer: 'Mike R.',
         items: ['Brisket Plate (1/2 lb)', 'Mac & Cheese', 'Sweet Tea'],
-        special: '',
-        status: 'new',
-        placedAt: now - (4 * 60 * 1000)
+        special: '', status: 'new', placedAt: now - (4 * 60 * 1000)
       },
       {
-        id: 'ORD002',
-        number: '#002',
-        customer: 'Sarah & Tom',
+        id: 'ORD002', number: '#002', customer: 'Sarah & Tom',
         items: ['Pitmaster\'s Combo', 'Pulled Pork Sandwich', 'Baked Beans', 'Coleslaw', '2x Lemonade'],
         special: 'No onions on the sandwich. Sauce on the side.',
-        status: 'new',
-        placedAt: now - (2 * 60 * 1000)
+        status: 'new', placedAt: now - (2 * 60 * 1000)
       },
       {
-        id: 'ORD003',
-        number: '#003',
-        customer: 'Dave K.',
-        items: ['Beef Ribs (full rack)', 'Jalapeno Cornbread', 'Collard Greens'],
-        special: 'Extra napkins. Birthday dinner!',
-        status: 'in-progress',
-        placedAt: now - (12 * 60 * 1000)
+        id: 'ORD003', number: '#003', customer: 'Dave K.',
+        items: ['Beef Ribs (full rack)', 'Jalapeño Cornbread', 'Collard Greens'],
+        special: 'Extra napkins — birthday dinner! 🎂',
+        status: 'in-progress', placedAt: now - (12 * 60 * 1000)
       },
       {
-        id: 'ORD004',
-        number: '#004',
-        customer: 'Amanda L.',
+        id: 'ORD004', number: '#004', customer: 'Amanda L.',
         items: ['Turkey Breast Plate', 'Potato Salad', 'Pecan Pie'],
-        special: '',
-        status: 'in-progress',
-        placedAt: now - (8 * 60 * 1000)
+        special: '', status: 'in-progress', placedAt: now - (8 * 60 * 1000)
+      },
+      {
+        id: 'ORD005', number: '#005', customer: 'The Johnson Family',
+        items: ['Family Pack (feeds 4-6)', '2x Mac & Cheese', 'Baked Beans', '4x Sweet Tea', 'Peach Cobbler'],
+        special: 'One tray pork, one tray brisket please',
+        status: 'new', placedAt: now - (1 * 60 * 1000)
+      },
+      {
+        id: 'ORD006', number: '#006', customer: 'Carlos M.',
+        items: ['Burnt Ends Basket', 'Fried Okra', 'Lemonade'],
+        special: '', status: 'ready', placedAt: now - (22 * 60 * 1000)
       }
     ];
   }
+
+  // ── Demo order generator ──
+  var DEMO_NAMES = ['Josh T.','Kim & Party of 3','Roberto G.','The Williams Table','Brittany S.','Coach Reynolds','Table 12','Walk-in #7','Linda M.','The Hendersons'];
+  var DEMO_ITEMS = [
+    ['Brisket Plate (1/2 lb)','Mac & Cheese','Sweet Tea'],
+    ['Beef Ribs (full rack)','Baked Beans','Lone Star'],
+    ['Pitmaster\'s Combo','Coleslaw','Cornbread','2x Lemonade'],
+    ['Pulled Pork Sandwich','Potato Salad','Shiner Bock'],
+    ['Burnt Ends Basket','Fried Okra','Sweet Tea'],
+    ['Turkey Breast Plate','Collard Greens','Pecan Pie'],
+    ['Sausage Links (3pc)','Jalapeño Cornbread','Lemonade'],
+    ['Family Pack (feeds 4-6)','2x Mac & Cheese','4x Sweet Tea'],
+    ['Brisket Burger','Coleslaw','Fries','Lone Star'],
+    ['Spare Ribs Half Rack','Baked Beans','Banana Pudding']
+  ];
+  var DEMO_SPECIALS = ['','','','Extra sauce on the side','No onions','Make it spicy!','Allergy: no dairy','Sauce on the side for kids','Extra napkins please',''];
+  var demoCounter = 7;
+
+  window.addDemoOrder = function() {
+    var idx = Math.floor(Math.random() * DEMO_NAMES.length);
+    var num = '#0' + (demoCounter < 10 ? '0' : '') + demoCounter++;
+    orders.unshift({
+      id: 'ORD_DEMO_' + Date.now(),
+      number: num,
+      customer: DEMO_NAMES[idx],
+      items: DEMO_ITEMS[idx % DEMO_ITEMS.length],
+      special: DEMO_SPECIALS[idx % DEMO_SPECIALS.length],
+      status: 'new',
+      placedAt: Date.now()
+    });
+    saveOrders();
+    renderAll();
+    playBell();
+    showToast(num + ' — New order fired!');
+  };
+
+  window.clearCompleted = function() {
+    orders = orders.filter(function(o) { return o.status !== 'completed'; });
+    saveOrders();
+    renderAll();
+    showToast('Cleared completed orders');
+  };
+
+  window.resetToDemo = function() {
+    localStorage.removeItem(LS_KEY);
+    orders = generateSampleOrders();
+    saveOrders();
+    renderAll();
+    showToast('Demo orders reset');
+  };
 
   // ── Load orders (localStorage + API merge) ──
   function loadOrders() {
@@ -766,8 +849,9 @@
     var now = Date.now();
     var elapsed = now - order.placedAt;
     var elapsedClass = getElapsedClass(elapsed);
+    var ageClass = elapsed > 20*60000 ? 'age-critical' : elapsed > 10*60000 ? 'age-warn' : '';
 
-    var html = '<div class="order-card status-' + order.status + '" data-id="' + order.id + '">';
+    var html = '<div class="order-card status-' + order.status + (ageClass ? ' '+ageClass : '') + '" data-id="' + order.id + '">';
     html += '<div class="order-top">';
     html += '  <div class="order-number">' + esc(order.number) + '</div>';
     html += '  <div class="order-time-info">';
@@ -937,21 +1021,25 @@
   // ── Elapsed time live update (every second) ──
   function updateElapsedTimes() {
     var now = Date.now();
-    var elapsedEls = document.querySelectorAll('.order-elapsed');
     var cards = document.querySelectorAll('.order-card');
-
     cards.forEach(function(card) {
       var id = card.getAttribute('data-id');
       var order = orders.find(function(o) { return o.id === id; });
       if (!order) return;
-
       var elapsed = now - order.placedAt;
       var elapsedEl = card.querySelector('.order-elapsed');
       if (elapsedEl) {
         elapsedEl.textContent = formatElapsed(elapsed);
         elapsedEl.className = 'order-elapsed ' + getElapsedClass(elapsed);
       }
+      // Update age class on card
+      card.classList.remove('age-warn','age-critical');
+      if (elapsed > 20*60000) card.classList.add('age-critical');
+      else if (elapsed > 10*60000) card.classList.add('age-warn');
     });
+    // update demo counter
+    var counter = document.getElementById('demoOrderCounter');
+    if (counter) counter.textContent = orders.length + ' order(s) in system';
   }
 
   // ── Init ──
